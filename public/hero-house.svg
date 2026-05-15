@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" aria-hidden="true">
+  <rect width="400" height="300" fill="none"/>
+  <!-- House body -->
+  <rect x="80" y="150" width="240" height="132" rx="4" fill="#dbeafe"/>
+  <!-- Roof -->
+  <polygon points="55,155 200,45 345,155" fill="#1d4ed8"/>
+  <!-- Door -->
+  <rect x="168" y="208" width="64" height="74" rx="4" fill="#1e3a8a"/>
+  <circle cx="224" cy="247" r="4" fill="#93c5fd"/>
+  <!-- Window left -->
+  <rect x="96" y="174" width="62" height="50" rx="4" fill="#bfdbfe"/>
+  <line x1="127" y1="174" x2="127" y2="224" stroke="#93c5fd" stroke-width="2"/>
+  <line x1="96" y1="199" x2="158" y2="199" stroke="#93c5fd" stroke-width="2"/>
+  <!-- Window right -->
+  <rect x="242" y="174" width="62" height="50" rx="4" fill="#bfdbfe"/>
+  <line x1="273" y1="174" x2="273" y2="224" stroke="#93c5fd" stroke-width="2"/>
+  <line x1="242" y1="199" x2="304" y2="199" stroke="#93c5fd" stroke-width="2"/>
+  <!-- Solar panel left -->
+  <rect x="128" y="88" width="57" height="36" rx="3" fill="#7dd3fc"/>
+  <line x1="128" y1="100" x2="185" y2="100" stroke="#1d4ed8" stroke-width="1.5" opacity="0.6"/>
+  <line x1="128" y1="112" x2="185" y2="112" stroke="#1d4ed8" stroke-width="1.5" opacity="0.6"/>
+  <line x1="156" y1="88" x2="156" y2="124" stroke="#1d4ed8" stroke-width="1.5" opacity="0.6"/>
+  <!-- Solar panel right -->
+  <rect x="215" y="88" width="57" height="36" rx="3" fill="#7dd3fc"/>
+  <line x1="215" y1="100" x2="272" y2="100" stroke="#1d4ed8" stroke-width="1.5" opacity="0.6"/>
+  <line x1="215" y1="112" x2="272" y2="112" stroke="#1d4ed8" stroke-width="1.5" opacity="0.6"/>
+  <line x1="243" y1="88" x2="243" y2="124" stroke="#1d4ed8" stroke-width="1.5" opacity="0.6"/>
+  <!-- Sun -->
+  <circle cx="348" cy="55" r="22" fill="#fbbf24" opacity="0.85"/>
+  <line x1="348" y1="22" x2="348" y2="14" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="348" y1="96" x2="348" y2="88" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="315" y1="55" x2="307" y2="55" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="389" y1="55" x2="381" y2="55" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="325" y1="32" x2="319" y2="26" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="377" y1="78" x2="371" y2="72" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="371" y1="32" x2="377" y2="26" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <line x1="319" y1="78" x2="325" y2="72" stroke="#fbbf24" stroke-width="2.5" opacity="0.7" stroke-linecap="round"/>
+  <!-- Energy bolt -->
+  <polygon points="200,140 195,155 202,155 197,172 208,152 200,152 206,140" fill="#fbbf24" opacity="0.9"/>
+  <!-- Ground -->
+  <rect x="40" y="282" width="320" height="3" rx="2" fill="#bfdbfe" opacity="0.6"/>
+  <!-- Small trees -->
+  <rect x="45" y="230" width="8" height="52" rx="2" fill="#93c5fd" opacity="0.5"/>
+  <ellipse cx="49" cy="220" rx="18" ry="22" fill="#bfdbfe" opacity="0.6"/>
+  <rect x="347" y="245" width="8" height="37" rx="2" fill="#93c5fd" opacity="0.5"/>
+  <ellipse cx="351" cy="235" rx="16" ry="18" fill="#bfdbfe" opacity="0.6"/>
+</svg>

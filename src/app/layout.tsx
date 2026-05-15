@@ -1,20 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_JP, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-
-const notoSansJP = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  display: "swap",
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
-});
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://housing-performance-simulator.vercel.app";
@@ -111,8 +96,11 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${notoSansJP.variable} ${jetBrainsMono.variable} antialiased`}
+      className="antialiased"
     >
+      <head>
+        <link rel="preload" as="image" href="/hero-house.svg" />
+      </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground">
         {children}
       </body>

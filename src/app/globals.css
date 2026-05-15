@@ -71,8 +71,8 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-sans: ui-sans-serif, system-ui, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Meiryo", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", monospace;
 }
 
 *,
@@ -104,29 +104,14 @@ body {
 
 /* ── Hero subtle blue gradient ─────────────────────────── */
 .hero-bg {
-  background:
-    radial-gradient(ellipse 80% 60% at 70% 30%, oklch(0.95 0.05 245) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 70% at 20% 80%, oklch(0.96 0.04 215) 0%, transparent 65%),
-    var(--background);
+  background: var(--background);
 }
-.hero-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: linear-gradient(
-      to right,
-      oklch(0.50 0.16 250 / 0.05) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      oklch(0.50 0.16 250 / 0.05) 1px,
-      transparent 1px
-    );
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 0%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 0%, transparent 75%);
+
+.hero-img {
+  background-image: url('/hero-house.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 @media print {

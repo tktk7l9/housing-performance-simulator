@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Calculator, FileBarChart2, Scale, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { HeroScene } from "@/components/three/HeroScene";
 
 export default function Home() {
   return (
@@ -19,13 +17,13 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="relative border-b overflow-hidden hero-bg">
+      <section className="relative border-b hero-bg">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-16 md:py-24 grid grid-cols-1 md:grid-cols-[1fr_minmax(0,440px)] gap-10 md:gap-12 items-center relative">
           <div>
             <div className="font-mono text-xs uppercase tracking-[0.2em] text-primary mb-4">
               Neutral · Data-driven
             </div>
-            <h1 className="text-4xl md:text-6xl font-semibold tracking-tight max-w-[20ch]">
+            <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-normal max-w-[20ch]">
               30年でどちらが得か、<br />
               <span className="text-primary">数字で確かめる。</span>
             </h1>
@@ -34,17 +32,13 @@ export default function Home() {
               営業トークではなく、計算根拠を開示しながらシミュレーションします。
             </p>
             <div className="mt-10 flex items-center gap-4">
-              <Button asChild size="lg">
-                <Link href="/simulator">
-                  シミュレーションを始める <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              <Link href="/simulator" prefetch={false} className="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8">
+                シミュレーションを始める <ArrowRight className="h-4 w-4" />
+              </Link>
               <span className="text-xs text-muted-foreground">登録不要 / ブラウザ内保存</span>
             </div>
           </div>
-          <div className="relative h-[280px] md:h-[420px] order-first md:order-none">
-            <HeroScene className="absolute inset-0" />
-          </div>
+          <div className="relative h-[280px] md:h-[420px] order-first md:order-none hero-img" aria-hidden="true" />
         </div>
       </section>
 
@@ -107,7 +101,7 @@ export default function Home() {
       <footer className="border-t">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-8 flex items-center justify-between text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} 住宅性能シミュレーター</span>
-          <Link href="/simulator" className="hover:text-foreground">シミュレーターへ →</Link>
+          <Link href="/simulator" prefetch={false} className="hover:text-foreground">シミュレーターへ →</Link>
         </div>
       </footer>
     </div>
