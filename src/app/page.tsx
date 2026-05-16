@@ -6,7 +6,7 @@ export default function Home() {
     <div className="flex flex-col">
       <header className="border-b">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
-          <Link href="/" className="font-semibold tracking-tight">
+          <Link href="/" prefetch={false} className="font-semibold tracking-tight">
             住宅性能シミュレーター
           </Link>
           <nav className="text-sm text-muted-foreground flex items-center gap-5">
