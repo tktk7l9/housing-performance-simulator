@@ -13,7 +13,6 @@ import { SensitivityChart } from "../results/SensitivityChart";
 import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios } from "@/store/housingStore";
 import { runSimulation } from "@/lib/housing/calculator";
 import { buildAllScenarios } from "@/lib/housing/presets";
-import { evaluateResult } from "@/lib/housing/evaluation";
 
 vi.mock("recharts", async (importOriginal) => {
   const actual: Record<string, unknown> = await importOriginal();

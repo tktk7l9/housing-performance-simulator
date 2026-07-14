@@ -4,12 +4,10 @@ import { calcSelfConsumption } from "../battery";
 import { calcAnnualCo2 } from "../co2";
 import { matchSubsidies, totalSubsidyAmount } from "../subsidy";
 import {
-  buildBaselineScenario,
   buildHighPerformanceScenario,
   buildHighPerformanceSolarBatteryScenario,
   buildUserScenario,
   buildRenovationAsIsScenario,
-  buildRenovationAppliedScenario,
   buildAllScenarios,
   defaultRenovationInput,
 } from "../presets";

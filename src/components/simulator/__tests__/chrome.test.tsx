@@ -7,7 +7,7 @@ import { SimulatorApp } from "../SimulatorApp";
 import { TrailSidebar } from "../TrailSidebar";
 import { SaveDialog } from "../SaveDialog";
 import { SavedList } from "../SavedList";
-import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios, STEP_IDS_NEW_BUILD } from "@/store/housingStore";
+import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios } from "@/store/housingStore";
 
 // Recharts は ResizeObserver 依存 → stub
 vi.mock("recharts", async (importOriginal) => {

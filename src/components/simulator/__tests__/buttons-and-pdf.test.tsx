@@ -11,9 +11,12 @@ import { runSimulation } from "@/lib/housing/calculator";
 import { buildAllScenarios } from "@/lib/housing/presets";
 
 vi.mock("@react-pdf/renderer", () => {
-  const factory = (tag: string) => ({ children }: { children?: React.ReactNode }) => (
-    <div data-pdf-tag={tag}>{children}</div>
-  );
+  const factory = (tag: string) => {
+    const MockTag = ({ children }: { children?: React.ReactNode }) => (
+      <div data-pdf-tag={tag}>{children}</div>
+    );
+    return MockTag;
+  };
   return {
     Document: factory("doc"),
     Page: factory("page"),
