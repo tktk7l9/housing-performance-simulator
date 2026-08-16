@@ -8,3 +8,7 @@ build
 next-env.d.ts
 .vercel
 coverage
+
+# Cloudflare Workers のビルド成果物とローカル状態
+.open-next
+.wrangler

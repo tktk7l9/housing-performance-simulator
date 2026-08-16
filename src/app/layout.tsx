@@ -2,8 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
+// 2026-08-16 に Vercel から Cloudflare Workers へ移行した。Vercel 側は Fair Use
+// 超過でアカウントごと 402 になっており、旧 URL を canonical に残すと死んだ
+// ページを正規扱いさせてしまう。
+// NEXT_PUBLIC_SITE_URL があればそちらが優先（ビルド時にインライン化される）。
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://housing-performance-simulator.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "https://housing-performance-simulator.saitotakuya0719.workers.dev";
 
 const TITLE = "住宅性能シミュレーター";
 const TAGLINE = "30年でどちらが得か、数字で確かめる。";
