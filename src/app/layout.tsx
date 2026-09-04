@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // 2026-08-16 に Vercel から Cloudflare Workers へ移行した。Vercel 側は Fair Use
@@ -109,7 +108,14 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground">
         {children}
-        {process.env.VERCEL && <Analytics />}
+        {/* Cloudflare Web Analytics（トークンは公開前提の識別子。秘密ではない） */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts --
+            type="module" のスクリプトは仕様上 defer されるため、パーサーを止めない */}
+        <script
+          type="module"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={'{"token": "cd156fbf0fd24da0a12e58fdb4e63828"}'}
+        />
       </body>
     </html>
   );
