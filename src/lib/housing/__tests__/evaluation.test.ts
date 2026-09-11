@@ -160,40 +160,6 @@ describe("evaluateResult", () => {
     expect(e.breakdown.autonomy).toBeGreaterThan(0);
   });
 
-  it("リフォームモード headline 各 grade", () => {
-    // grades S/A/B/C/D を起こすには様々な入力を試す必要があるが、
-    // headline 出力経路のいずれかを発火するだけでカバレッジは取れる
-    const input = baseInput({
-      mode: "renovation",
-      renovation: {
-        ageBracket: "1980-1999",
-        remainingYears: 20,
-        existingUa: 1.5,
-        existingCValue: 5,
-        existingWindow: "alum-pair",
-        existingWaterHeater: "gas",
-        existingHeating: "ac-only",
-        items: ["ceiling-insulation", "floor-insulation", "inner-window"],
-      },
-    });
-    const out = runSimulation(input, buildAllScenarios(input));
-    const e = evaluateResult(out)!;
-    expect(e.headline).toBeTruthy();
-  });
-
-  it("新築モード headline (grade=D 想定: 高コスト低効果)", () => {
-    const input = baseInput({
-      insulationPreset: "heat20-g3",
-      uaValue: 0.26,
-      cValue: 0.7,
-      solarCapacity: 0,
-      batteryCapacity: 0,
-    });
-    const out = runSimulation(input, buildAllScenarios(input));
-    const e = evaluateResult(out)!;
-    expect(e.headline).toBeTruthy();
-  });
-
   it("payback < halfLife → 投資回収満点 (20pt)", () => {
     const input = baseInput({
       insulationPreset: "zeh",
@@ -250,144 +216,66 @@ describe("evaluateResult", () => {
   });
 
   // gradeFromScore の各境界に到達するため、score を直接合成して headline を網羅
-  it("gradeFromScore 各境界: 内部関数を介して全 grade を踏む", async () => {
-    // generateHeadline は export されていないので、score を変動させて grade を変える
-    // 新築 / リフォーム各モードで grade D に近いケース・S に近いケースの両方を踏む
-    const newBuildS = runSimulation(
-      baseInput({ insulationPreset: "heat20-g2", uaValue: 0.46, solarCapacity: 5, batteryCapacity: 7, hems: true }),
-      buildAllScenarios(baseInput({ insulationPreset: "heat20-g2", uaValue: 0.46, solarCapacity: 5, batteryCapacity: 7, hems: true }))
-    );
-    const newBuildD = runSimulation(
-      baseInput({ insulationPreset: "heat20-g3", uaValue: 0.26, solarCapacity: 0, batteryCapacity: 0, livingYears: 5 }),
-      buildAllScenarios(baseInput({ insulationPreset: "heat20-g3", uaValue: 0.26, solarCapacity: 0, batteryCapacity: 0, livingYears: 5 }))
-    );
-    expect(evaluateResult(newBuildS)?.headline).toBeTruthy();
-    expect(evaluateResult(newBuildD)?.headline).toBeTruthy();
-
-    const renoInputBase = baseInput({
-      mode: "renovation",
-      renovation: {
-        ageBracket: "before-1980",
-        remainingYears: 30,
-        existingUa: 1.8,
-        existingCValue: 8,
-        existingWindow: "alum-pair",
-        existingWaterHeater: "gas",
-        existingHeating: "ac-only",
-        items: ["external-insulation", "window-replacement", "ceiling-insulation"],
-      },
-    });
-    const reno = runSimulation(renoInputBase, buildAllScenarios(renoInputBase));
-    expect(evaluateResult(reno)?.headline).toBeTruthy();
-
-    const renoDInputBase = baseInput({
-      mode: "renovation",
-      livingYears: 3,
-      renovation: {
-        ageBracket: "before-1980",
-        remainingYears: 3,
-        existingUa: 1.8, existingCValue: 8,
-        existingWindow: "alum-pair", existingWaterHeater: "gas", existingHeating: "ac-only",
-        items: ["external-insulation", "window-replacement", "internal-insulation", "ceiling-insulation", "floor-insulation", "inner-window", "airtight-improvement"],
-      },
-    });
-    const renoD = runSimulation(renoDInputBase, buildAllScenarios(renoDInputBase));
-    expect(evaluateResult(renoD)?.headline).toBeTruthy();
-  });
 });
 
 describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網羅", () => {
-  // baseline=100, target.cumulativeTotal を 80 にすると saving ratio = 0.20 → cost score 40
-  // payback=0 で payback score 20、co2=5000 で env 25、scRate=1.0+solar=5 で auton 15 → S
-  it("new-build grade S (line 141)", () => {
-    const out = makeOutput("new-build",
-      { cumulativeTotal: 80, annualCo2Reduction: 5000, selfConsumptionRate: 1 },
-      100, 0, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("S");
-    expect(e.headline).toContain("環境性能");
-  });
+  /**
+   * grade は gradeFromScore の閾値ラダー（S>=90 / A>=75 / B>=60 / C>=40 / それ以下 D）、
+   * headline は generateHeadline の mode × grade スイッチ。どちらも 5 行 / 10 分岐の
+   * 表なので、テストも表で持つ。以前は 10 本の it に分かれていて、
+   * (1) テスト名にソース行番号（"grade S (line 141)"）が埋まっていて無関係な編集で嘘になる、
+   * (2) スコアの作り方をコメントに書き写していたので WEIGHTS を変えると 10 本全部を手で
+   * 逆算し直す必要がある、という 2 つの負債があった。
+   *
+   * スコアの組み立て: cost = 削減率 / payback / env = CO2 / auton = 自家消費率 + 太陽光。
+   */
+  type GradeCase = {
+    mode: SimulationMode;
+    target: Partial<ScenarioResult>;
+    baselineCumulative: number;
+    payback: number;
+    solar: number;
+    grade: string;
+    headline: string;
+  };
 
-  it("new-build grade A", () => {
-    // 75-89 にする: cost 30 + payback 20 + env 15 + auton 10 = 75
-    const out = makeOutput("new-build",
-      { cumulativeTotal: 85, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
-      100, 5, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("A");
-  });
+  it.each<GradeCase>([
+    { mode: "new-build", grade: "S", headline: "環境性能・自立性ともに高水準",
+      target: { cumulativeTotal: 80, annualCo2Reduction: 5000, selfConsumptionRate: 1 },
+      baselineCumulative: 100, payback: 0, solar: 5 },
+    { mode: "new-build", grade: "A", headline: "投資回収も早く",
+      target: { cumulativeTotal: 85, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
+      baselineCumulative: 100, payback: 5, solar: 5 },
+    { mode: "new-build", grade: "B", headline: "おおむね妥当な選択",
+      target: { cumulativeTotal: 90, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
+      baselineCumulative: 100, payback: 10, solar: 5 },
+    { mode: "new-build", grade: "C", headline: "回収しきれない可能性",
+      target: { cumulativeTotal: 90, annualCo2Reduction: 2500, selfConsumptionRate: 0.5 },
+      baselineCumulative: 100, payback: 15, solar: 5 },
+    { mode: "new-build", grade: "D", headline: "経済合理性が低い試算結果",
+      target: { cumulativeTotal: 110, annualCo2Reduction: 0, selfConsumptionRate: 0, initialCostDelta: 5_000_000 },
+      baselineCumulative: 100, payback: Infinity, solar: 0 },
 
-  it("new-build grade B (line 145)", () => {
-    // 60-74: cost 20 + payback 15 + env 15 + auton 10 = 60
-    const out = makeOutput("new-build",
-      { cumulativeTotal: 90, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
-      100, 10, 30, 5);
+    { mode: "renovation", grade: "S", headline: "優先順位の高いリフォーム項目",
+      target: { cumulativeTotal: 70, annualCo2Reduction: 5000, selfConsumptionRate: 1 },
+      baselineCumulative: 100, payback: 0, solar: 5 },
+    { mode: "renovation", grade: "A", headline: "経済合理性の高いリフォーム計画",
+      target: { cumulativeTotal: 85, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
+      baselineCumulative: 100, payback: 5, solar: 5 },
+    { mode: "renovation", grade: "B", headline: "再検討の余地あり",
+      target: { cumulativeTotal: 90, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
+      baselineCumulative: 100, payback: 10, solar: 5 },
+    { mode: "renovation", grade: "C", headline: "優先項目を絞ると効率が上がります",
+      target: { cumulativeTotal: 90, annualCo2Reduction: 2500, selfConsumptionRate: 0.5 },
+      baselineCumulative: 100, payback: 15, solar: 5 },
+    { mode: "renovation", grade: "D", headline: "光熱費削減効果が初期費用を上回りません",
+      target: { cumulativeTotal: 130, annualCo2Reduction: 0, selfConsumptionRate: 0, initialCostDelta: 5_000_000 },
+      baselineCumulative: 100, payback: Infinity, solar: 0 },
+  ])("$mode: grade $grade / headline に「$headline」", (c) => {
+    const out = makeOutput(c.mode, c.target, c.baselineCumulative, c.payback, 30, c.solar);
     const e = evaluateResult(out)!;
-    expect(e.grade).toBe("B");
-    expect(e.headline).toContain("妥当");
-  });
-
-  it("new-build grade C (line 147)", () => {
-    // cost ~20 + payback ~17 + env ~12 + auton ~10 = ~59 → C
-    const out = makeOutput("new-build",
-      { cumulativeTotal: 90, annualCo2Reduction: 2500, selfConsumptionRate: 0.5 },
-      100, 15, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("C");
-    expect(e.headline).toContain("回収");
-  });
-
-  it("new-build grade D", () => {
-    const out = makeOutput("new-build",
-      { cumulativeTotal: 110, annualCo2Reduction: 0, selfConsumptionRate: 0, initialCostDelta: 5_000_000 },
-      100, Infinity, 30, 0);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("D");
-  });
-
-  it("renovation grade S (line 128)", () => {
-    const out = makeOutput("renovation",
-      { cumulativeTotal: 70, annualCo2Reduction: 5000, selfConsumptionRate: 1 },
-      100, 0, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("S");
-    expect(e.headline).toContain("優先順位");
-  });
-
-  it("renovation grade A (line 130)", () => {
-    const out = makeOutput("renovation",
-      { cumulativeTotal: 85, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
-      100, 5, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("A");
-    expect(e.headline).toContain("経済合理性");
-  });
-
-  it("renovation grade B (line 132)", () => {
-    const out = makeOutput("renovation",
-      { cumulativeTotal: 90, annualCo2Reduction: 3000, selfConsumptionRate: 0.5 },
-      100, 10, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("B");
-    expect(e.headline).toContain("再検討");
-  });
-
-  it("renovation grade C (line 134)", () => {
-    const out = makeOutput("renovation",
-      { cumulativeTotal: 90, annualCo2Reduction: 2500, selfConsumptionRate: 0.5 },
-      100, 15, 30, 5);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("C");
-    expect(e.headline).toContain("優先項目");
-  });
-
-  it("renovation grade D (line 136)", () => {
-    const out = makeOutput("renovation",
-      { cumulativeTotal: 130, annualCo2Reduction: 0, selfConsumptionRate: 0, initialCostDelta: 5_000_000 },
-      100, Infinity, 30, 0);
-    const e = evaluateResult(out)!;
-    expect(e.grade).toBe("D");
-    expect(e.headline).toContain("光熱費削減効果");
+    expect(e.grade).toBe(c.grade);
+    expect(e.headline).toContain(c.headline);
   });
 
   it("payback>livingYears で 0pt 加点なし", () => {
