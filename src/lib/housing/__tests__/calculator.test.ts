@@ -133,7 +133,7 @@ describe("runSimulation: 新築モード基本ケース", () => {
 
   it("payback=0 分岐: user 仕様 = baseline 仕様 + 補助金で初年度から低コスト", () => {
     // user シナリオを baseline と同じ仕様にした上で補助金を適用すると
-    // 初期費用 (baseline - 補助金) < baseline 初期費用 → payback=0 (line 155)
+    // 初期費用 (baseline - 補助金) < baseline 初期費用 → payback=0
     const input = baseInput({
       appliedSubsidyIds: ["battery-doe"], // 200,000円 補助金、要件なし
     });
