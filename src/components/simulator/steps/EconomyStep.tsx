@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useHousingStore } from "@/store/housingStore";
@@ -25,39 +25,41 @@ export function EconomyStep({ onNext, onBack }: { onNext: () => void; onBack: ()
     <StepShell title="経済条件" description="光熱費の単価・上昇シナリオ・補助金を設定します。" onBack={onBack} onNext={onNext}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Field id="electricityPriceBuy" label="電気料金 単価" unit="円/kWh">
-          <Input
+          <NumberInput
             id="electricityPriceBuy"
-            type="number"
             min={10}
             max={80}
             value={input.electricityPriceBuy}
-            onChange={(e) => updateInput({ electricityPriceBuy: Number(e.target.value) || 0 })}
+            unit="円/kWh"
+            onValueChange={(n) => updateInput({ electricityPriceBuy: n })}
           />
         </Field>
         <Field id="gasPrice" label="ガス料金" unit="円/m³">
-          <Input
+          <NumberInput
             id="gasPrice"
-            type="number"
             min={50}
             max={500}
             value={input.gasPrice}
-            onChange={(e) => updateInput({ gasPrice: Number(e.target.value) || 0 })}
+            unit="円/m³"
+            onValueChange={(n) => updateInput({ gasPrice: n })}
           />
         </Field>
         <Field id="sellPriceFit" label="FIT 売電単価" unit="円/kWh" hint="設置から10年間">
-          <Input
+          <NumberInput
             id="sellPriceFit"
-            type="number"
+            min={0}
             value={input.sellPriceFit}
-            onChange={(e) => updateInput({ sellPriceFit: Number(e.target.value) || 0 })}
+            unit="円/kWh"
+            onValueChange={(n) => updateInput({ sellPriceFit: n })}
           />
         </Field>
         <Field id="sellPricePostFit" label="卒FIT 売電単価" unit="円/kWh" hint="11年目以降">
-          <Input
+          <NumberInput
             id="sellPricePostFit"
-            type="number"
+            min={0}
             value={input.sellPricePostFit}
-            onChange={(e) => updateInput({ sellPricePostFit: Number(e.target.value) || 0 })}
+            unit="円/kWh"
+            onValueChange={(n) => updateInput({ sellPricePostFit: n })}
           />
         </Field>
       </div>

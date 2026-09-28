@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useHousingStore } from "@/store/housingStore";
 import { REGION_LIST } from "@/lib/housing/data/regions";
@@ -130,13 +130,13 @@ export function BuildingStep({ onNext, onBack }: { onNext: () => void; onBack?: 
         </Field>
 
         <Field id="floorArea" label="延床面積" unit="㎡">
-          <Input
+          <NumberInput
             id="floorArea"
-            type="number"
             min={30}
             max={500}
             value={input.floorArea}
-            onChange={(e) => updateInput({ floorArea: Number(e.target.value) || 0 })}
+            unit="㎡"
+            onValueChange={(n) => updateInput({ floorArea: n })}
           />
         </Field>
 
@@ -164,13 +164,14 @@ export function BuildingStep({ onNext, onBack }: { onNext: () => void; onBack?: 
         </Field>
 
         <Field id="household" label="家族人数" unit="人">
-          <Input
+          <NumberInput
             id="household"
-            type="number"
             min={1}
             max={10}
             value={input.household}
-            onChange={(e) => updateInput({ household: Number(e.target.value) || 1 })}
+            unit="人"
+            integer
+            onValueChange={(n) => updateInput({ household: n })}
           />
         </Field>
 
@@ -190,13 +191,14 @@ export function BuildingStep({ onNext, onBack }: { onNext: () => void; onBack?: 
         </Field>
 
         <Field id="livingYears" label={input.mode === "renovation" ? "残り想定居住年数" : "想定居住年数"} unit="年" hint="累計コストを比較する期間。">
-          <Input
+          <NumberInput
             id="livingYears"
-            type="number"
             min={5}
             max={50}
             value={input.livingYears}
-            onChange={(e) => updateInput({ livingYears: Number(e.target.value) || 30 })}
+            unit="年"
+            integer
+            onValueChange={(n) => updateInput({ livingYears: n })}
           />
         </Field>
       </div>

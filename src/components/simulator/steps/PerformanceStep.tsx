@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useHousingStore } from "@/store/housingStore";
 import { INSULATION_PRESETS } from "@/lib/housing/data/insulationPresets";
@@ -55,25 +55,21 @@ export function PerformanceStep({ onNext, onBack }: { onNext: () => void; onBack
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Field id="uaValue" label="UA 値" unit="W/(m²·K)" hint="外皮平均熱貫流率。小さいほど断熱が良い。">
-          <Input
+          <NumberInput
             id="uaValue"
-            type="number"
-            step={0.01}
             min={0.1}
             max={3.5}
             value={input.uaValue}
-            onChange={(e) => updateInput({ uaValue: Number(e.target.value) || 0, insulationPreset: "custom" })}
+            onValueChange={(n) => updateInput({ uaValue: n, insulationPreset: "custom" })}
           />
         </Field>
         <Field id="cValue" label="C 値" unit="cm²/m²" hint="相当隙間面積。小さいほど気密が良い。">
-          <Input
+          <NumberInput
             id="cValue"
-            type="number"
-            step={0.1}
             min={0.1}
             max={10}
             value={input.cValue}
-            onChange={(e) => updateInput({ cValue: Number(e.target.value) || 0, insulationPreset: "custom" })}
+            onValueChange={(n) => updateInput({ cValue: n, insulationPreset: "custom" })}
           />
         </Field>
       </div>

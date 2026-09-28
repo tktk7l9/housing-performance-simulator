@@ -29,18 +29,18 @@ describe("BuildingStep interactions", () => {
     expect(useHousingStore.getState().input.household).toBe(6);
   });
 
-  it("家族人数: 不正値で fallback 1", () => {
+  it("家族人数: 不正値は反映せず元の値を保つ", () => {
     render(<BuildingStep onNext={() => {}} />);
     const household = screen.getByDisplayValue("4") as HTMLInputElement;
     act(() => { fireEvent.change(household, { target: { value: "abc" } }); });
-    expect(useHousingStore.getState().input.household).toBe(1);
+    expect(useHousingStore.getState().input.household).toBe(4);
   });
 
-  it("延床面積入力: 不正値で fallback 0", () => {
+  it("延床面積入力: 不正値は反映せず元の値を保つ", () => {
     render(<BuildingStep onNext={() => {}} />);
     const floor = screen.getByDisplayValue("120") as HTMLInputElement;
     act(() => { fireEvent.change(floor, { target: { value: "abc" } }); });
-    expect(useHousingStore.getState().input.floorArea).toBe(0);
+    expect(useHousingStore.getState().input.floorArea).toBe(120);
   });
 
   it("想定居住年数: 不正値で fallback 30", () => {
@@ -89,11 +89,11 @@ describe("EquipmentStep interactions", () => {
     expect(useHousingStore.getState().input.solarCapacity).toBe(10);
   });
 
-  it("太陽光容量: 不正値で fallback 0", () => {
+  it("太陽光容量: 不正値は反映せず元の値を保つ", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     const solar = screen.getByDisplayValue("5") as HTMLInputElement;
     act(() => { fireEvent.change(solar, { target: { value: "abc" } }); });
-    expect(useHousingStore.getState().input.solarCapacity).toBe(0);
+    expect(useHousingStore.getState().input.solarCapacity).toBe(5);
   });
 
   it("蓄電池容量で batteryCapacity 更新", () => {
@@ -110,11 +110,11 @@ describe("EquipmentStep interactions", () => {
     expect(useHousingStore.getState().input.solarTilt).toBe(45);
   });
 
-  it("太陽光傾斜角: 不正値で fallback 0", () => {
+  it("太陽光傾斜角: 不正値は反映せず元の値を保つ", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     const tilt = screen.getByDisplayValue("30") as HTMLInputElement;
     act(() => { fireEvent.change(tilt, { target: { value: "xx" } }); });
-    expect(useHousingStore.getState().input.solarTilt).toBe(0);
+    expect(useHousingStore.getState().input.solarTilt).toBe(30);
   });
 
   it("HEMS トグルでオン", () => {
