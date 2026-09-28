@@ -74,7 +74,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>1年目の光熱費内訳</CardTitle>
@@ -89,15 +89,17 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>初期費用の内訳</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <InitialCostBreakdown output={result} />
-          </CardContent>
-        </Card>
       </div>
+
+      {/* SHIG 85: the cost table gets the full width instead of half a column */}
+      <Card>
+        <CardHeader>
+          <CardTitle>初期費用の内訳</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <InitialCostBreakdown output={result} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

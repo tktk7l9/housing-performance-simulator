@@ -97,7 +97,7 @@ export function EquipmentStep({ onNext, onBack }: { onNext: () => void; onBack: 
 
       <Field id="hems" label="HEMS（エネルギー管理システム）" hint="自家消費率を約 5% 改善する想定。">
         <div className="flex items-center gap-3">
-          <ToggleSwitch checked={input.hems} onCheckedChange={(v) => updateInput({ hems: v })} />
+          <ToggleSwitch id="hems" checked={input.hems} onCheckedChange={(v) => updateInput({ hems: v })} />
           <span className="text-sm text-muted-foreground">{input.hems ? "あり" : "なし"}</span>
         </div>
       </Field>
