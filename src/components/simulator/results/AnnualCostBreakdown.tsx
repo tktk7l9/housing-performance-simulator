@@ -25,7 +25,7 @@ export function AnnualCostBreakdown({ scenarios, electricityPrice, gasPrice, sel
     const hotWater = s.annualHotWaterKwh * electricityPrice + s.annualHotWaterGas * gasPrice;
     const other = s.annualOtherKwh * electricityPrice;
     const sell = -s.firstYearSellRevenue;
-    void sellPriceFit; // 売電は firstYearSellRevenue を直接利用
+    void sellPriceFit; // Feed-in revenue uses firstYearSellRevenue directly
     return {
       name: s.scenarioName,
       暖冷房: Math.round(heating / 1000),

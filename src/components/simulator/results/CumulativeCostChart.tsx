@@ -24,7 +24,7 @@ export function CumulativeCostChart({ scenarios, livingYears }: { scenarios: Sce
   const data = Array.from({ length: livingYears }, (_, i) => {
     const row: Record<string, number> = { year: i + 1 };
     for (const s of scenarios) {
-      row[s.scenarioName] = Math.round((s.yearly[i]?.cumulative ?? 0) / 10000); // 万円
+      row[s.scenarioName] = Math.round((s.yearly[i]?.cumulative ?? 0) / 10000); // in 10,000 yen (万円)
     }
     return row;
   });

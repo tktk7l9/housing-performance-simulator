@@ -1,35 +1,35 @@
-// 給湯エネルギー計算
+// Hot water energy calculation
 //
-// 1人当たり給湯熱量は地域・人数規模で逓減する（規模の経済）。
-// 機器効率（COP・熱効率）で消費エネルギーへ変換。
+// Hot water heat per person decreases with region and household size (economies of scale).
+// Converted to consumed energy by equipment efficiency (COP / thermal efficiency).
 
 import type { HousingInput } from "./types";
 import { WATER_HEATERS } from "./data/equipment";
 import { GAS_KWH_PER_M3 } from "./data/electricityPlans";
 import { REGIONS } from "./data/regions";
 
-/** 給湯熱量基本値 kWh/人/年 (6地域・標準的な使用)。
- *  寒冷地ほど水温が低く必要熱量が増える係数を地域から導出する。 */
+/** Base hot water heat kWh/person/year (region 6, typical use).
+ *  A factor derived from the region raises the required heat in colder areas, where water is colder. */
 const HEAT_DEMAND_BASE_PER_PERSON = 1500;
 
 function regionFactor(regionId: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8): number {
-  // HDD18 を 1500 で正規化した補正
+  // Correction using HDD18 normalized by 1500
   const hdd = REGIONS[regionId].hdd18;
   return 0.85 + (hdd / 1500) * 0.15;
 }
 
 function householdScaleFactor(household: number): number {
-  // 1人=1.0, 2人=0.9, 4人=0.8, 6人=0.75 のような逓減
+  // Decreasing like 1 person=1.0, 2=0.9, 4=0.8, 6=0.75
   if (household <= 1) return 1.0;
   return 1.0 - 0.05 * Math.min(household - 1, 5);
 }
 
 export interface HotWaterResult {
-  /** 給湯需要熱量 kWh/年 */
+  /** Hot water heat demand kWh/year */
   demandHeatKwh: number;
-  /** 電力消費 kWh/年（電気給湯時） */
+  /** Electricity consumption kWh/year (electric water heating) */
   electricityKwh: number;
-  /** ガス消費 m³/年（ガス系給湯時） */
+  /** Gas consumption m³/year (gas-based water heating) */
   gasM3: number;
 }
 
@@ -54,7 +54,7 @@ export function calcHotWater(input: HousingInput): HotWaterResult {
       gasM3: heatNeededKwh / GAS_KWH_PER_M3,
     };
   }
-  // hybrid (エネファーム): ガスで発熱 + 発電 → 簡易: ガス70%, 発電で 30% を相殺
+  // hybrid (Ene-Farm): gas produces heat + electricity -> simplified: gas 70%, generation offsets 30%
   const heatNeededKwh = (baseHeat * 0.7) / 0.85;
   return {
     demandHeatKwh: baseHeat,

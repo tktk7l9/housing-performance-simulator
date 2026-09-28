@@ -46,7 +46,7 @@ describe("regionLookup", () => {
   it("lookupRegion: 都市指定ありでも CITY_OVERRIDES に無ければ prefecture fallback", () => {
     const r = lookupRegion("北海道", "知床町");
     expect(r.matched).toBe("prefecture");
-    expect(r.region).toBe(2); // 北海道デフォルト
+    expect(r.region).toBe(2); // Hokkaido default
   });
 
   it("citiesFor: prefecture プレフィックスでフィルタ", () => {
@@ -130,7 +130,7 @@ describe("renovationCosts", () => {
     expect(estimateOpenings(120)).toBe(14);
   });
   it("estimateOpenings: 60 ㎡ でも下限 6 箇所", () => {
-    expect(estimateOpenings(60)).toBe(7); // round(60/120*14)=7、下限6
+    expect(estimateOpenings(60)).toBe(7); // round(60/120*14)=7, minimum 6
   });
   it("estimateOpenings: 極小床面積でも 6 箇所が下限", () => {
     expect(estimateOpenings(10)).toBe(6);

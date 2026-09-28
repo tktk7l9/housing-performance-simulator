@@ -1,11 +1,11 @@
-// 初期費用と年間光熱費の計算
+// Calculation of initial cost and annual utility cost
 //
-// 新築モード:
-//   断熱プリセット追加コスト + 太陽光 + 蓄電池 + 給湯機 + 暖冷房 + HEMS
-// リフォームモード（renovation 入力あり）:
-//   選択された改修項目の単価合計 + 太陽光 + 蓄電池 + HEMS
-//   (給湯機・暖冷房は新築モードと同じ扱い、現状維持シナリオは別途 0 で計算)
-// 補助金は別計算。
+// New-build mode:
+//   insulation preset extra cost + solar + battery + water heater + heating/cooling + HEMS
+// Renovation mode (with renovation input):
+//   sum of unit prices of the selected renovation items + solar + battery + HEMS
+//   (water heater and heating/cooling are treated as in new-build mode; the keep-as-is scenario is computed separately as 0)
+// Subsidies are calculated separately.
 
 import type { HousingInput } from "./types";
 import { presetExtraCost } from "./data/insulationPresets";
@@ -44,9 +44,9 @@ export function calcRenovationCost(input: HousingInput): number {
 }
 
 export function calcInitialCost(input: HousingInput): InitialCostBreakdown {
-  // リフォームモードでは、給湯・暖冷房は既存設備の継続利用前提で初期費用に含めない。
-  // renovation オブジェクト未設定（現状維持シナリオ）でも renovation 系列の費用 0 で
-  // 集計するため、renovation の有無ではなく mode で分岐する。
+  // In renovation mode, hot water and heating/cooling assume continued use of existing equipment and are excluded from initial cost.
+  // Even without a renovation object (keep-as-is scenario), renovation-related costs are totaled as 0,
+  // so branch on mode rather than on whether renovation exists.
   const isRenovation = input.mode === "renovation";
   const insulation = isRenovation ? 0 : presetExtraCost(input.insulationPreset, input.floorArea);
   const renovation = isRenovation ? calcRenovationCost(input) : 0;

@@ -1,9 +1,9 @@
-// 住宅性能シミュレーター: 入力 / シナリオ / 結果の型定義
+// Housing performance simulator: type definitions for input / scenario / result
 
 export type RegionId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type InsulationPresetId =
-  | "energy-saving" // 省エネ基準
+  | "energy-saving" // energy-saving standard
   | "zeh"
   | "heat20-g1"
   | "heat20-g2"
@@ -17,14 +17,14 @@ export type WindowSpecId =
   | "resin-triple-lowe";
 
 export type WaterHeaterId =
-  | "eco-cute" // エコキュート
-  | "gas" // ガス給湯
-  | "ene-farm"; // エネファーム
+  | "eco-cute" // EcoCute (heat-pump water heater)
+  | "gas" // gas water heater
+  | "ene-farm"; // Ene-Farm (fuel cell)
 
 export type HeatingId =
-  | "ac-only" // エアコン
-  | "floor-heating" // 床暖房 + エアコン
-  | "central-air"; // 全館空調
+  | "ac-only" // air conditioner
+  | "floor-heating" // floor heating + air conditioner
+  | "central-air"; // whole-house air conditioning
 
 export type SolarOrientation = "south" | "south-east" | "south-west" | "east" | "west";
 
@@ -44,21 +44,21 @@ export type RenovationItemId =
   | "airtight-improvement";
 
 export interface RenovationInput {
-  /** 築年代から既存性能を推定 */
+  /** Estimate existing performance from construction era */
   ageBracket: AgeBracket;
-  /** 残り想定居住年数（既定 20） */
+  /** Remaining expected years of residence (default 20) */
   remainingYears: number;
-  /** 現状 UA 値（ageBracket から自動セット、上書き可） */
+  /** Current UA value (set automatically from ageBracket, can be overridden) */
   existingUa: number;
-  /** 現状 C 値 */
+  /** Current C value */
   existingCValue: number;
-  /** 現状 窓仕様 */
+  /** Current window spec */
   existingWindow: WindowSpecId;
-  /** 現状 給湯機器 */
+  /** Current water heater */
   existingWaterHeater: WaterHeaterId;
-  /** 現状 暖冷房 */
+  /** Current heating/cooling */
   existingHeating: HeatingId;
-  /** 実施するリフォーム項目 */
+  /** Renovation items to carry out */
   items: RenovationItemId[];
 }
 
@@ -72,134 +72,134 @@ export type Prefecture =
   | "熊本県" | "大分県" | "宮崎県" | "鹿児島県" | "沖縄県";
 
 export interface HousingInput {
-  /** 計算モード（新築 or 既築リフォーム） */
+  /** Calculation mode (new build or renovation of an existing house) */
   mode: SimulationMode;
 
-  /** 延床面積 m² */
+  /** Total floor area m² */
   floorArea: number;
-  /** 地域区分 1〜8 */
+  /** Climate region 1-8 */
   region: RegionId;
-  /** 家族人数 */
+  /** Household size */
   household: number;
-  /** 在宅時間帯（朝晩のみ / 日中も在宅） */
+  /** At-home hours (mornings and evenings only / also during the day) */
   presence: "evening-only" | "all-day";
-  /** 想定居住年数 */
+  /** Expected years of residence */
   livingYears: number;
 
-  /** 都道府県（住所→地域自動判定の入力） */
+  /** Prefecture (input for automatic address -> region detection) */
   addressPrefecture?: Prefecture;
-  /** 主要都市（任意。例外マップに無ければ未設定） */
+  /** Major city (optional; unset if not in the exception map) */
   addressCity?: string;
 
-  /** 断熱プリセット選択 */
+  /** Selected insulation preset */
   insulationPreset: InsulationPresetId;
-  /** UA値 W/(m²·K) — プリセットから自動セット、手動編集可 */
+  /** UA value W/(m²·K) — set automatically from the preset, can be edited manually */
   uaValue: number;
-  /** C値 cm²/m² */
+  /** C value cm²/m² */
   cValue: number;
-  /** 窓仕様 */
+  /** Window spec */
   windowSpec: WindowSpecId;
 
-  /** 太陽光容量 kW */
+  /** Solar capacity kW */
   solarCapacity: number;
-  /** 太陽光方位 */
+  /** Solar orientation */
   solarOrientation: SolarOrientation;
-  /** 太陽光傾斜角 degree */
+  /** Solar tilt angle, degrees */
   solarTilt: number;
-  /** 蓄電池容量 kWh */
+  /** Battery capacity kWh */
   batteryCapacity: number;
-  /** 給湯機器 */
+  /** Water heater */
   waterHeater: WaterHeaterId;
-  /** 暖冷房方式 */
+  /** Heating/cooling system */
   heating: HeatingId;
-  /** HEMS 有無 */
+  /** Whether HEMS is installed */
   hems: boolean;
 
-  /** 電気料金単価 円/kWh（買電） */
+  /** Electricity unit price yen/kWh (purchased) */
   electricityPriceBuy: number;
-  /** ガス料金 円/m³（採用時） */
+  /** Gas price yen/m³ (when used) */
   gasPrice: number;
-  /** FIT 売電単価 円/kWh */
+  /** FIT feed-in unit price yen/kWh */
   sellPriceFit: number;
-  /** 卒FIT後 売電単価 円/kWh */
+  /** Post-FIT (卒FIT) feed-in unit price yen/kWh */
   sellPricePostFit: number;
-  /** 電気代上昇シナリオ */
+  /** Electricity price rise scenario */
   electricityRise: ElectricityRiseScenario;
-  /** 適用する補助金 ID 一覧 */
+  /** List of subsidy IDs to apply */
   appliedSubsidyIds: string[];
 
-  /** 既築リフォームモードの追加入力 */
+  /** Additional input for renovation mode */
   renovation?: RenovationInput;
 }
 
-/** 比較用シナリオ */
+/** Scenario for comparison */
 export interface Scenario {
   id: string;
   name: string;
   description: string;
-  /** プリセット由来か、ユーザー入力か */
+  /** Whether it comes from a preset or from user input */
   source: "preset" | "user";
   input: HousingInput;
 }
 
-/** 1シナリオの結果 */
+/** Result of a single scenario */
 export interface ScenarioResult {
   scenarioId: string;
   scenarioName: string;
 
-  /** 初期費用（補助金控除前） 円 */
+  /** Initial cost (before subsidies), yen */
   initialCostGross: number;
-  /** 適用補助金合計 円 */
+  /** Total applied subsidies, yen */
   subsidyTotal: number;
-  /** 補助金控除後 初期費用 円 */
+  /** Initial cost after subsidies, yen */
   initialCostNet: number;
-  /** 標準仕様との初期費用差額（標準=正の値で割高） 円 */
+  /** Initial cost difference from the standard spec (positive = more expensive than standard), yen */
   initialCostDelta: number;
 
-  /** 年間: 暖冷房 電力消費 kWh */
+  /** Annual: heating/cooling electricity consumption kWh */
   annualHeatingKwh: number;
-  /** 年間: 給湯 電力 kWh（ガス併用時の電力相当も含む） */
+  /** Annual: hot water electricity kWh (including electricity equivalent when combined with gas) */
   annualHotWaterKwh: number;
-  /** 年間: 給湯 ガス消費 m³ */
+  /** Annual: hot water gas consumption m³ */
   annualHotWaterGas: number;
-  /** 年間: その他家電 kWh */
+  /** Annual: other appliances kWh */
   annualOtherKwh: number;
-  /** 年間: 太陽光発電量 kWh */
+  /** Annual: solar generation kWh */
   annualSolarKwh: number;
-  /** 自家消費率 0〜1 */
+  /** Self-consumption rate 0-1 */
   selfConsumptionRate: number;
 
-  /** 1年目: 年間光熱費（売電収入差し引き後） 円 */
+  /** Year 1: annual utility cost (after subtracting feed-in revenue), yen */
   firstYearEnergyCost: number;
-  /** 1年目: 売電収入 円 */
+  /** Year 1: feed-in revenue, yen */
   firstYearSellRevenue: number;
 
-  /** 年次キャッシュフロー（年単位、初年度=index 0） */
+  /** Yearly cash flow (per year, first year = index 0) */
   yearly: YearlyEntry[];
 
-  /** 30年（または livingYears）累計コスト 円 = 初期費用net + Σ年間光熱費 */
+  /** 30-year (or livingYears) cumulative cost, yen = net initial cost + Σ annual utility cost */
   cumulativeTotal: number;
 
-  /** CO2 削減量（標準比） kg/年 — 標準シナリオでは 0 */
+  /** CO2 reduction (vs. standard) kg/year — 0 for the standard scenario */
   annualCo2Reduction: number;
-  /** 居住年数累積 CO2 削減量 kg */
+  /** Cumulative CO2 reduction over the years of residence, kg */
   cumulativeCo2Reduction: number;
 }
 
 export interface YearlyEntry {
   year: number; // 0..livingYears-1
-  energyCost: number; // 当年の光熱費（売電差し引き後）
-  cumulative: number; // 当年までの累計（初期費用net 込み）
+  energyCost: number; // Utility cost for the year (after subtracting feed-in revenue)
+  cumulative: number; // Cumulative total up to this year (including net initial cost)
 }
 
 export interface SimulationOutput {
   inputAtCalc: HousingInput;
   scenarios: ScenarioResult[];
-  /** 比較基準 = 標準仕様シナリオの id */
+  /** Comparison baseline = id of the standard spec scenario */
   baselineId: string;
-  /** 投資回収年数 マップ scenarioId -> years (Infinity なら回収不可) */
+  /** Payback years map scenarioId -> years (Infinity means never pays back) */
   paybackYears: Record<string, number>;
-  /** 計算で使用した前提値スナップショット */
+  /** Snapshot of the assumptions used in the calculation */
   assumptions: AssumptionSnapshot;
 }
 
@@ -208,34 +208,34 @@ export interface AssumptionSnapshot {
   co2EmissionFactorElectricity: number;
   /** kg-CO2/m³ */
   co2EmissionFactorGas: number;
-  /** 太陽光損失係数 */
+  /** Solar loss factor */
   solarLossFactor: number;
-  /** その他家電 kWh/人/年（生活係数） */
+  /** Other appliances kWh/person/year (lifestyle factor) */
   otherKwhPerPersonYear: number;
-  /** 電気代上昇率 適用値 */
+  /** Applied electricity price rise rate */
   electricityRisePercent: number;
-  /** FIT 期間 年 */
+  /** FIT period, years */
   fitYears: number;
 }
 
 export interface SubsidyMaster {
   id: string;
   name: string;
-  /** 円 */
+  /** yen */
   amount: number;
-  /** 適用条件: ZEH 以上 / G2 以上 等 */
+  /** Eligibility: ZEH or above / G2 or above, etc. */
   description: string;
-  /** 自動マッチ条件: 必要な insulationPreset 最低ライン */
+  /** Auto-match condition: minimum required insulationPreset */
   requiredInsulation?: InsulationPresetId;
-  /** 自動マッチ条件: 太陽光必須 */
+  /** Auto-match condition: solar required */
   requiresSolar?: boolean;
-  /** 対象地域（未指定なら全国） */
+  /** Eligible regions (nationwide if unspecified) */
   regionScope?: "national" | "prefecture";
   lastUpdated: string; // YYYY-MM-DD
   source: string;
 }
 
-/** 保存済みシミュレーション */
+/** Saved simulation */
 export interface SavedSimulation {
   id: string;
   name: string;
@@ -243,9 +243,9 @@ export interface SavedSimulation {
   savedAt: string;
   schemaVersion: number;
   input: HousingInput;
-  /** 一覧表示用の軽量サマリ */
+  /** Lightweight summary for list display */
   summary?: {
-    cumulativeTotal: number; // ユーザーシナリオの累計
+    cumulativeTotal: number; // Cumulative total of the user scenario
     initialCostNet: number;
     livingYears: number;
   };

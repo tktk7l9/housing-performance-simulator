@@ -1,6 +1,6 @@
-// 断熱プリセット: 各等級の代表的な UA・C 値と、想定追加初期費用（標準=省エネ基準を基準とした増分）。
-// 出典: 国交省 省エネ基準告示 / HEAT20 設計ガイドブック / 一般的な工務店原価感のレンジ中央値。
-// 価格は床面積 120m² 基準。実際は地域・工法で大きく変動する点を AssumptionsPanel で開示。
+// Insulation presets: representative UA/C values per grade and assumed extra initial cost (increment over the standard = energy-saving standard).
+// Source: MLIT energy-saving standard notice (省エネ基準告示) / HEAT20 design guidebook / midpoint of typical builder cost ranges.
+// Prices assume 120m² floor area. AssumptionsPanel discloses that actual prices vary widely by region and construction method.
 
 import type { InsulationPresetId, RegionId } from "../types";
 
@@ -8,11 +8,11 @@ export interface InsulationPresetData {
   id: InsulationPresetId;
   name: string;
   description: string;
-  /** 6地域 基準の UA 値 */
+  /** UA value for region 6 */
   uaByRegion: Record<RegionId, number>;
-  /** C値（共通の目標値） */
+  /** C value (common target) */
   cValue: number;
-  /** 標準（省エネ基準）からの追加コスト 円 (床面積120m²基準) */
+  /** Extra cost over the standard (energy-saving standard), yen (for 120m² floor area) */
   extraCostBase120m2: number;
 }
 
@@ -59,7 +59,7 @@ export const INSULATION_PRESETS: Record<Exclude<InsulationPresetId, "custom">, I
   },
 };
 
-/** プリセット ID から床面積に応じた追加コストを返す */
+/** Return the extra cost for a preset ID scaled by floor area */
 export function presetExtraCost(presetId: InsulationPresetId, floorArea: number): number {
   if (presetId === "custom") return 0;
   const base = INSULATION_PRESETS[presetId].extraCostBase120m2;

@@ -3,7 +3,7 @@ import { cleanup } from "@testing-library/react";
 
 afterEach(() => cleanup());
 
-// jsdom には matchMedia が無いので no-op スタブ
+// jsdom has no matchMedia, so use a no-op stub
 if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   Object.defineProperty(window, "matchMedia", {
     writable: true,
@@ -21,7 +21,7 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   });
 }
 
-// ResizeObserver: Recharts / radix で使用される
+// ResizeObserver: used by Recharts / radix
 if (typeof window !== "undefined" && typeof (window as { ResizeObserver?: unknown }).ResizeObserver === "undefined") {
   (window as { ResizeObserver: typeof ResizeObserver }).ResizeObserver = class {
     observe() {}
@@ -40,14 +40,14 @@ if (typeof window !== "undefined" && typeof (window as { IntersectionObserver?: 
   } as unknown as typeof IntersectionObserver;
 }
 
-// hasPointerCapture: radix の slider/select で使用 (jsdom には無い)
+// hasPointerCapture: used by radix slider/select (missing in jsdom)
 if (typeof Element !== "undefined" && !Element.prototype.hasPointerCapture) {
   Element.prototype.hasPointerCapture = () => false;
   Element.prototype.setPointerCapture = () => {};
   Element.prototype.releasePointerCapture = () => {};
 }
 
-// scrollIntoView も jsdom に無い
+// scrollIntoView is also missing in jsdom
 if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }

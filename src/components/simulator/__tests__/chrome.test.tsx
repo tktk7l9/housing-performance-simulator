@@ -1,5 +1,5 @@
 /**
- * Simulator chrome: SimulatorApp / TrailSidebar / SavedList / SaveDialog のテスト
+ * Simulator chrome: tests for SimulatorApp / TrailSidebar / SavedList / SaveDialog
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -9,7 +9,7 @@ import { SaveDialog } from "../SaveDialog";
 import { SavedList } from "../SavedList";
 import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios } from "@/store/housingStore";
 
-// Recharts は ResizeObserver 依存 → stub
+// Recharts depends on ResizeObserver -> stub
 vi.mock("recharts", async (importOriginal) => {
   const actual: Record<string, unknown> = await importOriginal();
   return {
@@ -80,7 +80,7 @@ describe("SimulatorApp", () => {
 describe("TrailSidebar", () => {
   it("ステップ名一覧を表示", () => {
     render(<TrailSidebar />);
-    // 6 ステップが見える
+    // All 6 steps are visible
     expect(screen.getAllByRole("button").length).toBeGreaterThan(0);
   });
 
@@ -89,7 +89,7 @@ describe("TrailSidebar", () => {
     const buttons = screen.getAllByRole("button");
     if (buttons.length > 1) {
       fireEvent.click(buttons[1]);
-      // step が変化
+      // The step changes
       expect(useHousingStore.getState().currentStep).not.toBe(0);
     }
   });
@@ -104,7 +104,7 @@ describe("TrailSidebar", () => {
 describe("SaveDialog", () => {
   it("open=false なら何も描画しない or 不在", () => {
     render(<SaveDialog open={false} onOpenChange={() => {}} />);
-    // dialog テキストは出ない
+    // Dialog text is not shown
     expect(screen.queryByText(/保存名|保存$/)).toBeNull();
   });
 
@@ -129,7 +129,7 @@ describe("SaveDialog", () => {
 describe("SavedList", () => {
   it("保存ゼロ件: 空メッセージ or ボタンのみ", () => {
     render(<SavedList />);
-    // 保存リストの何らかの UI が見える
+    // Some saved-list UI is visible
     expect(document.body.children.length).toBeGreaterThan(0);
   });
 

@@ -1,10 +1,10 @@
-// 暖冷房負荷の概算（拡張デグリーデー法ベース）
+// Rough heating/cooling load (based on the extended degree-day method)
 //
-// Q_heat = UA × A × HDD18 × 24 / 1000  [kWh/年]
-// Q_cool = UA × A × CDD24 × 24 / 1000 × 0.6 [kWh/年]   (冷房は蓄熱・日射の影響を係数で補正)
-// 換気熱損失補正: C値が大きいほど隙間風による熱損失増 → 簡易係数で加算
+// Q_heat = UA × A × HDD18 × 24 / 1000  [kWh/year]
+// Q_cool = UA × A × CDD24 × 24 / 1000 × 0.6 [kWh/year]   (cooling is corrected by a factor for thermal storage and solar gain)
+// Ventilation heat loss correction: higher C value means more heat loss from drafts -> added via a simple factor
 //
-// 機器消費電力 = 負荷 ÷ COP
+// Equipment power consumption = load ÷ COP
 
 import { REGIONS } from "./data/regions";
 import { HEATING_OPTIONS } from "./data/equipment";
@@ -13,16 +13,16 @@ import type { HousingInput } from "./types";
 const COOLING_LOAD_FACTOR = 0.6;
 
 function ventilationLossFactor(cValue: number): number {
-  // C値 0.5 → 1.00, 1.0 → 1.04, 2.0 → 1.10, 5.0 → 1.25 程度の補正
+  // Correction of about C value 0.5 → 1.00, 1.0 → 1.04, 2.0 → 1.10, 5.0 → 1.25
   return 1.0 + Math.max(0, cValue - 0.5) * 0.05;
 }
 
 export interface HeatLoadResult {
-  /** 暖房負荷 kWh/年 */
+  /** Heating load kWh/year */
   heatingLoadKwh: number;
-  /** 冷房負荷 kWh/年 */
+  /** Cooling load kWh/year */
   coolingLoadKwh: number;
-  /** 暖冷房 機器消費電力 kWh/年 */
+  /** Heating/cooling equipment power consumption kWh/year */
   totalEnergyKwh: number;
 }
 

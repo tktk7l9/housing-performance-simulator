@@ -36,7 +36,7 @@ describe("runSimulation: 新築モード基本ケース", () => {
   it("buildAllScenarios で 4 シナリオ + baseline 同一", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
-    // baseline は重複しないので 4 シナリオのまま
+    // baseline is not duplicated, so it stays at 4 scenarios
     expect(out.scenarios).toHaveLength(4);
     expect(out.baselineId).toBe("preset-baseline");
   });
@@ -103,7 +103,7 @@ describe("runSimulation: 新築モード基本ケース", () => {
     const outB = runSimulation(b, [buildUserScenario(b)]);
     const userA = outA.scenarios.find((s) => s.scenarioId === "user")!;
     const userB = outB.scenarios.find((s) => s.scenarioId === "user")!;
-    // ene-farm: 給湯ガス + 発電相殺で年間電気代は通常別経路
+    // ene-farm: gas for hot water + generation offset, so annual electricity cost usually takes a separate path
     expect(userB.annualHotWaterGas).toBeGreaterThan(0);
     expect(userA.annualHotWaterGas).toBe(0);
   });
@@ -120,7 +120,7 @@ describe("runSimulation: 新築モード基本ケース", () => {
     const input = baseInput({ solarCapacity: 5, livingYears: 15, sellPriceFit: 20, sellPricePostFit: 5 });
     const out = runSimulation(input, [buildUserScenario(input)]);
     const user = out.scenarios.find((s) => s.scenarioId === "user")!;
-    // 卒FIT 切替の効果は連続だが yearCost に反映される
+    // The post-FIT (卒FIT) switch effect is continuous but is reflected in yearCost
     expect(user.yearly[11].energyCost).not.toBe(user.yearly[0].energyCost);
   });
 
@@ -132,8 +132,8 @@ describe("runSimulation: 新築モード基本ケース", () => {
   });
 
   it("payback=0 分岐: user 仕様 = baseline 仕様 + 補助金で初年度から低コスト", () => {
-    // user シナリオを baseline と同じ仕様にした上で補助金を適用すると
-    // 初期費用 (baseline - 補助金) < baseline 初期費用 → payback=0
+    // With the user scenario set to the same spec as baseline and a subsidy applied,
+    // initial cost (baseline - subsidy) < baseline initial cost -> payback=0
     const input = baseInput({
       appliedSubsidyIds: ["battery-doe"], // 200,000円 補助金、要件なし
     });
@@ -233,13 +233,13 @@ describe("runSimulation: リフォームモード", () => {
   });
 
   it("renovation オブジェクトなしの applied は user シナリオで代替", () => {
-    const input = baseInput({ mode: "renovation" }); // renovation 未設定
+    const input = baseInput({ mode: "renovation" }); // renovation unset
     const sc = buildRenovationAppliedScenario(input);
     expect(sc.id).toBe("user");
   });
 
   it("renovation オブジェクトなしの as-is も user シナリオで代替 (build 段階)", () => {
-    // runSimulation はこの状態で baseline 不在のため落ちるが、build 関数の挙動は確認できる
+    // runSimulation fails in this state because there is no baseline, but the build function's behavior can be checked
     const input = baseInput({ mode: "renovation" });
     const scs = buildAllScenarios(input);
     expect(scs.length).toBeGreaterThan(0);
@@ -257,7 +257,7 @@ describe("preset シナリオの基本属性", () => {
 
   it("custom insulation preset では UA を変更しない", () => {
     const sc = buildBaselineScenario(baseInput({ insulationPreset: "custom", uaValue: 0.66 }));
-    // baseline は energy-saving を上書きするので関係ないが、applyInsulation の custom 経路を踏むのは別シナリオ
+    // baseline overrides energy-saving so it is irrelevant; the applyInsulation custom path is hit by another scenario
     expect(sc.input.uaValue).toBeDefined();
   });
 });

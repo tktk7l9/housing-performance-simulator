@@ -1,6 +1,6 @@
-// 比較プリセット
-//   新築モード: 標準 / 高性能 / 高性能+太陽光+蓄電池 / ユーザー
-//   リフォームモード: 現状維持 / リフォーム実施
+// Comparison presets
+//   New-build mode: standard / high performance / high performance+solar+battery / user
+//   Renovation mode: keep as is / renovate
 
 import type { HousingInput, InsulationPresetId, RegionId, Scenario } from "./types";
 import { INSULATION_PRESETS } from "./data/insulationPresets";
@@ -18,7 +18,7 @@ function applyInsulation(input: HousingInput, presetId: InsulationPresetId): Hou
   };
 }
 
-/** 標準: 省エネ基準・太陽光なし・蓄電池なし */
+/** Standard: energy-saving standard, no solar, no battery */
 export function buildBaselineScenario(input: HousingInput): Scenario {
   const baseInput: HousingInput = {
     ...applyInsulation(input, "energy-saving"),
@@ -36,7 +36,7 @@ export function buildBaselineScenario(input: HousingInput): Scenario {
   };
 }
 
-/** 高性能: HEAT20 G2・樹脂サッシ・太陽光なし */
+/** High performance: HEAT20 G2, resin sashes, no solar */
 export function buildHighPerformanceScenario(input: HousingInput): Scenario {
   return {
     id: "preset-high-performance",
@@ -53,7 +53,7 @@ export function buildHighPerformanceScenario(input: HousingInput): Scenario {
   };
 }
 
-/** 高性能 + 太陽光 + 蓄電池 */
+/** High performance + solar + battery */
 export function buildHighPerformanceSolarBatteryScenario(input: HousingInput): Scenario {
   return {
     id: "preset-high-perf-solar-battery",
@@ -72,7 +72,7 @@ export function buildHighPerformanceSolarBatteryScenario(input: HousingInput): S
   };
 }
 
-/** ユーザー入力をシナリオ化（新築用） */
+/** Turn user input into a scenario (new build) */
 export function buildUserScenario(input: HousingInput): Scenario {
   return {
     id: "user",
@@ -83,9 +83,9 @@ export function buildUserScenario(input: HousingInput): Scenario {
   };
 }
 
-// ── リフォームモード ────────────────────────────────────────────
+// ── Renovation mode ────────────────────────────────────────────
 
-/** 現状維持: 既存性能のままで光熱費を払い続ける（追加投資0） */
+/** Keep as is: keep paying utility costs with the existing performance (zero extra investment) */
 export function buildRenovationAsIsScenario(input: HousingInput): Scenario {
   const r = input.renovation;
   if (!r) return buildUserScenario(input);
@@ -104,23 +104,23 @@ export function buildRenovationAsIsScenario(input: HousingInput): Scenario {
       windowSpec: r.existingWindow,
       waterHeater: r.existingWaterHeater,
       heating: r.existingHeating,
-      // 太陽光・蓄電池・HEMS は無し前提
+      // Assumes no solar, battery or HEMS
       solarCapacity: 0,
       batteryCapacity: 0,
       hems: false,
-      // リフォーム費用は計上しない
-      // renovation を消すことで calculator の cost 加算を回避
+      // Renovation cost is not counted
+      // Removing renovation avoids the cost addition in calculator
       renovation: undefined,
     },
   };
 }
 
-/** リフォーム実施: 選択されたリフォーム項目で性能改善 */
+/** Renovate: improve performance with the selected renovation items */
 export function buildRenovationAppliedScenario(input: HousingInput): Scenario {
   const r = input.renovation;
   if (!r) return buildUserScenario(input);
 
-  // 選択された項目で UA / C を引き下げ（下限あり）
+  // Lower UA / C by the selected items (with a floor)
   let ua = r.existingUa;
   let c = r.existingCValue;
   for (const id of r.items) {
@@ -129,7 +129,7 @@ export function buildRenovationAppliedScenario(input: HousingInput): Scenario {
     c = Math.max(0.5, c - item.cReduction);
   }
 
-  // 内窓 / 窓交換が含まれる場合、窓仕様を Low-E ペア相当へ更新
+  // If inner windows / window replacement are included, upgrade the window spec to Low-E pair equivalent
   const upgradeWindow =
     r.items.includes("inner-window") || r.items.includes("window-replacement");
 
@@ -150,7 +150,7 @@ export function buildRenovationAppliedScenario(input: HousingInput): Scenario {
   };
 }
 
-/** UI から呼ぶ統合: モードに応じて選択可能なシナリオ集合を返す */
+/** Entry point called from the UI: return the selectable scenario set for the mode */
 export function buildAllScenarios(input: HousingInput): Scenario[] {
   if (input.mode === "renovation") {
     return [
@@ -166,7 +166,7 @@ export function buildAllScenarios(input: HousingInput): Scenario[] {
   ];
 }
 
-/** リフォーム入力の初期値（築年代から既存性能を補完） */
+/** Initial renovation input (existing performance filled in from construction era) */
 export function defaultRenovationInput(input: HousingInput) {
   const ageBracket = input.renovation?.ageBracket ?? "1980-1999";
   const ua = uaForAge(ageBracket, input.region);

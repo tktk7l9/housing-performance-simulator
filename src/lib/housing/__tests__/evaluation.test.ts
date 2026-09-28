@@ -4,7 +4,7 @@ import { buildAllScenarios, buildUserScenario } from "../presets";
 import { evaluateResult, WEIGHTS } from "../evaluation";
 import type { HousingInput, ScenarioResult, SimulationOutput, SimulationMode } from "../types";
 
-// ── headline 各 grade を確実にカバーするための合成 SimulationOutput ─────
+// ── Synthetic SimulationOutput to reliably cover each headline grade ─────
 function makeScenario(id: string, name: string, opts: Partial<ScenarioResult> = {}): ScenarioResult {
   return {
     scenarioId: id,
@@ -129,7 +129,7 @@ describe("evaluateResult", () => {
   it("user シナリオが見つからない場合は null", () => {
     const input = baseInput();
     const out = runSimulation(input, [buildUserScenario(input)]);
-    // baseline を消去して target なし状態を作る
+    // Remove baseline to create a state with no target
     out.scenarios = out.scenarios.filter((s) => s.scenarioId !== "user");
     const e = evaluateResult(out);
     expect(e).toBeNull();
@@ -144,7 +144,7 @@ describe("evaluateResult", () => {
   });
 
   it("高性能シナリオを user として評価すると経済性・環境性が出る", () => {
-    // user 仕様を高性能 + 太陽光 + 蓄電池に
+    // Set the user spec to high performance + solar + battery
     const input = baseInput({
       insulationPreset: "heat20-g2",
       uaValue: 0.46,
@@ -174,7 +174,7 @@ describe("evaluateResult", () => {
   });
 
   it("payback Infinity だが累計プラス → プチ加点 (8pt) 分岐", () => {
-    // baseline と target が完全一致に近い → payback Infinity に近づける
+    // baseline and target are nearly identical -> push payback toward Infinity
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     const e = evaluateResult(out)!;
@@ -220,14 +220,14 @@ describe("evaluateResult", () => {
 
 describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網羅", () => {
   /**
-   * grade は gradeFromScore の閾値ラダー（S>=90 / A>=75 / B>=60 / C>=40 / それ以下 D）、
-   * headline は generateHeadline の mode × grade スイッチ。どちらも 5 行 / 10 分岐の
-   * 表なので、テストも表で持つ。以前は 10 本の it に分かれていて、
-   * (1) テスト名にソース行番号（"grade S (line 141)"）が埋まっていて無関係な編集で嘘になる、
-   * (2) スコアの作り方をコメントに書き写していたので WEIGHTS を変えると 10 本全部を手で
-   * 逆算し直す必要がある、という 2 つの負債があった。
+   * grade is the threshold ladder of gradeFromScore (S>=90 / A>=75 / B>=60 / C>=40 / otherwise D),
+   * headline is the mode × grade switch in generateHeadline. Both are tables of 5 rows / 10 branches,
+   * so the tests are kept as tables too. They used to be split into 10 separate its, which left
+   * two debts: (1) test names embedded source line numbers ("grade S (line 141)") that became false after unrelated edits,
+   * (2) the way each score was built was copied into comments, so changing WEIGHTS meant working all 10
+   * back out again by hand.
    *
-   * スコアの組み立て: cost = 削減率 / payback / env = CO2 / auton = 自家消費率 + 太陽光。
+   * Score composition: cost = reduction rate / payback / env = CO2 / auton = self-consumption rate + solar.
    */
   type GradeCase = {
     mode: SimulationMode;

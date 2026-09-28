@@ -25,7 +25,7 @@ export function RenovationStep({ onNext, onBack }: { onNext: () => void; onBack:
   const input = useHousingStore((s) => s.input);
   const updateInput = useHousingStore((s) => s.updateInput);
 
-  // 初回アクセス時に renovation を初期化
+  // Initialize renovation on first access
   const r: RenovationInput = input.renovation ?? defaultRenovationInput(input);
   const setR = (patch: Partial<RenovationInput>) => {
     updateInput({ renovation: { ...r, ...patch } });
@@ -48,7 +48,7 @@ export function RenovationStep({ onNext, onBack }: { onNext: () => void; onBack:
 
   const openings = estimateOpenings(input.floorArea);
 
-  // 概算合計
+  // Estimated total
   let total = 0;
   for (const id of r.items) {
     const item = RENOVATION_ITEMS[id];

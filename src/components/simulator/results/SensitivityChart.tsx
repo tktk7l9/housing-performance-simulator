@@ -15,19 +15,19 @@ import {
 import { runSensitivity } from "@/lib/housing/sensitivity";
 import type { HousingInput } from "@/lib/housing/types";
 
-const COLOR_GOOD = "var(--chart-2)"; // 累計が下がる方向 = 得
-const COLOR_BAD = "var(--chart-5)"; // 累計が上がる方向 = 損
+const COLOR_GOOD = "var(--chart-2)"; // Direction where the cumulative total goes down = gain
+const COLOR_BAD = "var(--chart-5)"; // Direction where the cumulative total goes up = loss
 
 export function SensitivityChart({ input }: { input: HousingInput }) {
   const rows = useMemo(() => runSensitivity(input), [input]);
 
-  // 棒1本につき2セグメント (low / high) を中心ゼロから両側に表示するための整形
+  // Shape the data to show two segments (low / high) per bar on both sides of a zero center
   const data = rows.map((r) => ({
     label: r.label,
     centerLabel: r.centerLabel,
     lowLabel: r.lowLabel,
     highLabel: r.highLabel,
-    // 万円換算で表示
+    // Display in units of 10,000 yen (万円)
     lowDelta: Math.round(r.lowDelta / 10000),
     highDelta: Math.round(r.highDelta / 10000),
     impact: Math.round(r.impact / 10000),

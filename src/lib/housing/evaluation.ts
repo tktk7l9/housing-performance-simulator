@@ -1,40 +1,40 @@
-// シミュレーション結果の総評ロジック
+// Overall assessment logic for simulation results
 //
-// ルールベースで「経済性 / 環境性 / エネルギー自立性」を採点し、
-// 合計点（0〜100）と SS〜D のグレード、テキストの総評を返す。
+// Scores "economy / environment / energy independence" with rules and
+// returns a total score (0-100), a grade from SS to D, and a text summary.
 //
-// 中立性のため、係数と評価しきい値は本ファイル冒頭にまとめて定数化し、
-// UI（EvaluationCard）から計算根拠として提示できるようにする。
+// For neutrality, coefficients and scoring thresholds are gathered as constants at the top of this file
+// so the UI (EvaluationCard) can present them as the basis of the calculation.
 
 import type { ScenarioResult, SimulationOutput, SimulationMode } from "./types";
 
-/** 重み: 経済性 60 / 環境性 25 / 自立性 15 = 100 */
+/** Weights: economy 60 / environment 25 / independence 15 = 100 */
 export const WEIGHTS = {
   economy: 60,
   environment: 25,
   autonomy: 15,
 } as const;
 
-/** 経済性の内訳: 累計コスト削減 40 + 投資回収 20 */
+/** Economy breakdown: cumulative cost reduction 40 + payback 20 */
 const ECONOMY_COST_MAX = 40;
 const ECONOMY_PAYBACK_MAX = 20;
 
-/** 累計コスト削減率 20% で経済性40点満点に到達する設計 */
+/** Designed so a 20% cumulative cost reduction reaches the full 40 economy points */
 const COST_SAVING_FULL_RATIO = 0.20;
 
-/** CO2 削減 5000 kg/年 で環境性25点満点に到達する設計 */
+/** Designed so a CO2 reduction of 5000 kg/year reaches the full 25 environment points */
 const CO2_FULL_REDUCTION_KG_PER_YEAR = 5000;
 
 export interface EvaluationBreakdown {
-  /** 経済性 0..60 */
+  /** Economy 0..60 */
   economy: number;
-  /** 環境性 0..25 */
+  /** Environment 0..25 */
   environment: number;
-  /** 自立性 0..15 */
+  /** Independence 0..15 */
   autonomy: number;
-  /** 経済性のうち、累計コスト削減 0..40 */
+  /** Part of economy: cumulative cost reduction 0..40 */
   economyCost: number;
-  /** 経済性のうち、投資回収 0..20 */
+  /** Part of economy: payback 0..20 */
   economyPayback: number;
 }
 
@@ -48,13 +48,13 @@ export interface Evaluation {
   strengths: string[];
   cautions: string[];
   breakdown: EvaluationBreakdown;
-  /** 評価対象のシナリオ（ユーザーの選択） */
+  /** Scenario being evaluated (the user's choice) */
   targetScenarioName: string;
-  /** 比較基準のシナリオ */
+  /** Baseline scenario for comparison */
   baselineScenarioName: string;
-  /** 投資回収年（target） — Infinity / 0 を含む */
+  /** Payback year (target) — may be Infinity / 0 */
   paybackYears: number;
-  /** 累計コスト差額（baseline - target、正で得） 円 */
+  /** Cumulative cost difference (baseline - target, positive means gain), yen */
   cumulativeDelta: number;
 }
 
@@ -80,7 +80,7 @@ function calcEconomyScores(
   livingYears: number,
   payback: number
 ): { cost: number; payback: number } {
-  // 1) 累計コスト削減
+  // 1) Cumulative cost reduction
   const baseTotal = Math.max(1, baseline.cumulativeTotal);
   const ratio = (baseline.cumulativeTotal - target.cumulativeTotal) / baseTotal;
   const cost = Math.max(
@@ -88,10 +88,10 @@ function calcEconomyScores(
     Math.min(ECONOMY_COST_MAX, (ratio / COST_SAVING_FULL_RATIO) * ECONOMY_COST_MAX)
   );
 
-  // 2) 投資回収（早いほど高得点）
+  // 2) Payback (earlier scores higher)
   let paybackScore = 0;
   if (target.scenarioId === baseline.scenarioId) {
-    paybackScore = ECONOMY_PAYBACK_MAX; // baseline 自身: 投資なし=満点扱い
+    paybackScore = ECONOMY_PAYBACK_MAX; // baseline itself: no investment = treated as full score
   } else if (Number.isFinite(payback) && payback >= 0) {
     const halfLife = livingYears * 0.4;
     if (payback <= halfLife) {
@@ -103,7 +103,7 @@ function calcEconomyScores(
       paybackScore = 0;
     }
   } else {
-    // 回収しない（Infinity）が累計差はプラス（投資なしで baseline より得） → 簡易プチ加点
+    // Never pays back (Infinity) but the cumulative difference is positive (better than baseline without investment) -> small simple bonus
     paybackScore = baseline.cumulativeTotal - target.cumulativeTotal > 0 ? 8 : 0;
   }
   return { cost, payback: paybackScore };
@@ -115,7 +115,7 @@ function calcEnvironment(target: ScenarioResult): number {
 }
 
 function calcAutonomy(target: ScenarioResult, solarCapacity: number): number {
-  // 自家消費率 0..10 + 太陽光 kW (上限 5kW で満点) 0..5
+  // Self-consumption rate 0..10 + solar kW (full score at 5kW cap) 0..5
   const sc = Math.max(0, Math.min(1, target.selfConsumptionRate));
   const sol = Math.max(0, Math.min(5, solarCapacity));
   return Math.min(WEIGHTS.autonomy, sc * 10 + sol);

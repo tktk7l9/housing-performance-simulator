@@ -1,5 +1,5 @@
 /**
- * Next.js page components の smoke test (server / metadata 部分のみ)
+ * Smoke tests for Next.js page components (server / metadata parts only)
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
@@ -9,13 +9,13 @@ import { SharedView } from "../share/[token]/SharedView";
 import { encodeInput } from "@/lib/share/encoder";
 import { DEFAULT_INPUT } from "@/store/housingStore";
 
-// Next.js navigation を mock
+// Mock Next.js navigation
 const replace = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
 }));
 
-// SimulatorApp (heavy) は stub
+// Stub SimulatorApp (heavy)
 vi.mock("@/components/simulator/SimulatorApp", () => ({
   SimulatorApp: () => <div data-testid="sim-app-stub" />,
 }));

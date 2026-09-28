@@ -48,7 +48,7 @@ export function SavedList() {
               type="button"
               onClick={() => {
                 loadSaved(s.id);
-                // 復元後に自動で再計算
+                // Recalculate automatically after restoring
                 setTimeout(calculate, 0);
               }}
               className="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-secondary px-2 py-1 text-[11px] text-secondary-foreground hover:bg-secondary/80"

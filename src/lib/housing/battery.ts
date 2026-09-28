@@ -1,7 +1,7 @@
-// 蓄電池による自家消費率の改善モデル
+// Model of self-consumption rate improvement from a battery
 //
-// ベース自家消費率（在宅パターン依存）→ 蓄電池容量に応じて段階的に向上。
-// HEMS あればさらに +5% 改善。
+// Base self-consumption rate (depends on at-home pattern) -> rises gradually with battery capacity.
+// With HEMS it improves by a further +5%.
 
 import type { HousingInput } from "./types";
 
@@ -11,7 +11,7 @@ function baseSelfConsumptionRate(input: HousingInput): number {
 }
 
 function batteryUplift(batteryKwh: number): number {
-  // 0kWh→0, 5kWh→+0.25, 10kWh→+0.40, 15kWh→+0.50（漸近）
+  // 0kWh→0, 5kWh→+0.25, 10kWh→+0.40, 15kWh→+0.50 (asymptotic)
   if (batteryKwh <= 0) return 0;
   return 0.50 * (1 - Math.exp(-batteryKwh / 8));
 }

@@ -1,5 +1,5 @@
-// 補助金マスタ（代表例のみ。実運用では `lastUpdated` を必ず更新する）。
-// 注意: 制度は年度ごとに改訂される。本データは MVP のサンプル値で、最新公募要領で確認すること。
+// Subsidy master (representative examples only; always update `lastUpdated` in real use).
+// Note: programs are revised every fiscal year. This data is MVP sample values; check the latest application guidelines.
 
 import type { SubsidyMaster } from "../types";
 
