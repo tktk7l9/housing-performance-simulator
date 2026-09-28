@@ -10,12 +10,39 @@ import { StepShell } from "../StepShell";
 import type { Prefecture, RegionId, SimulationMode } from "@/lib/housing/types";
 import { INSULATION_PRESETS } from "@/lib/housing/data/insulationPresets";
 import { cn } from "@/lib/utils";
+import { useToastStore } from "@/store/toastStore";
 
 export function BuildingStep({ onNext, onBack }: { onNext: () => void; onBack?: () => void }) {
   const input = useHousingStore((s) => s.input);
   const updateInput = useHousingStore((s) => s.updateInput);
   const setMode = useHousingStore((s) => s.setMode);
   const setAddress = useHousingStore((s) => s.setAddress);
+  const showToast = useToastStore((s) => s.show);
+
+  // SHIG 54: switching the mode resets progress, so offer a way back
+  const onModeChange = (mode: SimulationMode) => {
+    const prev = useHousingStore.getState();
+    if (prev.input.mode === mode) return;
+    const snapshot = {
+      mode: prev.input.mode,
+      currentStep: prev.currentStep,
+      visitedSteps: new Set(prev.visitedSteps),
+      selectedScenarioIds: [...prev.selectedScenarioIds],
+    };
+    setMode(mode);
+    showToast({
+      message: `検討シーンを「${mode === "renovation" ? "既築リフォーム" : "新築"}」に切り替えました`,
+      actionLabel: "元に戻す",
+      onAction: () =>
+        useHousingStore.setState((s) => ({
+          input: { ...s.input, mode: snapshot.mode },
+          currentStep: snapshot.currentStep,
+          visitedSteps: snapshot.visitedSteps,
+          selectedScenarioIds: snapshot.selectedScenarioIds,
+          result: null,
+        })),
+    });
+  };
 
   const onRegionChange = (regionStr: string) => {
     const region = Number(regionStr) as RegionId;
@@ -54,7 +81,7 @@ export function BuildingStep({ onNext, onBack }: { onNext: () => void; onBack?: 
       onBack={onBack}
       onNext={onNext}
     >
-      <ModeToggle value={input.mode} onChange={setMode} />
+      <ModeToggle value={input.mode} onChange={onModeChange} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Field id="addressPrefecture" label="都道府県（任意）" hint="選択すると地域区分を自動セットします。">

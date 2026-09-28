@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useHousingStore, getStepIds, type StepId } from "@/store/housingStore";
 import { TrailSidebar } from "./TrailSidebar";
+import { ToastHost } from "./ToastHost";
 import { BuildingStep } from "./steps/BuildingStep";
 import { PerformanceStep } from "./steps/PerformanceStep";
 import { EquipmentStep } from "./steps/EquipmentStep";
@@ -60,6 +61,7 @@ export function SimulatorApp() {
         {stepId === "results" && <ResultsStep onBack={goBack} />}
       </main>
     </div>
+    <ToastHost />
     </>
   );
 }

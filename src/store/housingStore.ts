@@ -68,7 +68,10 @@ interface HousingStore {
 
   saveCurrent: (name: string) => SavedSimulation;
   loadSaved: (id: string) => void;
-  deleteSaved: (id: string) => void;
+  /** Removes an entry and returns it with its position so the caller can offer undo. */
+  deleteSaved: (id: string) => { entry: SavedSimulation; index: number } | undefined;
+  /** Puts a deleted entry back at its former position (undo). */
+  restoreSaved: (entry: SavedSimulation, index: number) => void;
 }
 
 export const DEFAULT_INPUT: HousingInput = {
@@ -263,10 +266,22 @@ export const useHousingStore = create<HousingStore>()(
         });
       },
 
-      deleteSaved: (id) =>
-        set((s) => ({
-          savedSimulations: s.savedSimulations.filter((x) => x.id !== id),
-        })),
+      deleteSaved: (id) => {
+        const list = get().savedSimulations;
+        const index = list.findIndex((x) => x.id === id);
+        if (index < 0) return undefined;
+        const entry = list[index];
+        set({ savedSimulations: list.filter((x) => x.id !== id) });
+        return { entry, index };
+      },
+
+      restoreSaved: (entry, index) =>
+        set((s) => {
+          if (s.savedSimulations.some((x) => x.id === entry.id)) return {};
+          const next = [...s.savedSimulations];
+          next.splice(Math.min(index, next.length), 0, entry);
+          return { savedSimulations: next.slice(0, SAVED_LIMIT) };
+        }),
     }),
     {
       name: "housing-performance-simulator",
