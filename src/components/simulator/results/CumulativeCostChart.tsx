@@ -20,6 +20,13 @@ const COLORS = [
   "var(--chart-5)",
 ];
 
+// SHIG 96: each line also gets its own stroke pattern, so lines can be told apart without colour.
+const DASHES = ["", "8 4", "2 3", "12 3 2 3", "4 4"];
+
+export function dashFor(index: number): string {
+  return DASHES[index % DASHES.length];
+}
+
 export function CumulativeCostChart({ scenarios, livingYears }: { scenarios: ScenarioResult[]; livingYears: number }) {
   const data = Array.from({ length: livingYears }, (_, i) => {
     const row: Record<string, number> = { year: i + 1 };
@@ -47,7 +54,9 @@ export function CumulativeCostChart({ scenarios, livingYears }: { scenarios: Sce
               type="monotone"
               dataKey={s.scenarioName}
               stroke={COLORS[i % COLORS.length]}
-              strokeWidth={2}
+              strokeDasharray={dashFor(i)}
+              strokeWidth={s.scenarioId === "user" ? 3 : 2}
+              legendType="plainline"
               dot={false}
             />
           ))}

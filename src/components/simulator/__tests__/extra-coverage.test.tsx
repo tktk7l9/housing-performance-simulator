@@ -4,7 +4,7 @@
  * - BuildingStep: switching addressPrefecture/addressCity/region/presence
  * - PerformanceStep: presetChange (custom / non-custom), cValue, windowSpec
  * - RenovationStep: ageBracket/UA/C/window/heater/heating, item toggle
- * - ScenarioStep: toggleScenario via checkbox / calculate+onNext via "計算する"
+ * - ScenarioStep: toggleScenario via checkbox / onNext via "結果を見る"
  * - EconomyStep: electricityRise select, subsidy apply-button branches
  * - SaveDialog: form submit / cancel / outer onOpenChange / ESC / backdrop click
  * - SimulatorApp: the path where a setStep change triggers scrolling, moving on to ResultsStep
@@ -109,14 +109,14 @@ describe("PerformanceStep additional", () => {
     expect(useHousingStore.getState().input.insulationPreset).toBe("custom");
   });
 
-  it("UAValue/CValue: 不正値で 0 fallback", () => {
+  it("UAValue/CValue: 不正値は反映せず元の値を保つ", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     const ua = screen.getByDisplayValue("0.87") as HTMLInputElement;
     act(() => { fireEvent.change(ua, { target: { value: "abc" } }); });
-    expect(useHousingStore.getState().input.uaValue).toBe(0);
+    expect(useHousingStore.getState().input.uaValue).toBe(0.87);
     const c = screen.getByDisplayValue("5") as HTMLInputElement;
     act(() => { fireEvent.change(c, { target: { value: "abc" } }); });
-    expect(useHousingStore.getState().input.cValue).toBe(0);
+    expect(useHousingStore.getState().input.cValue).toBe(5);
   });
 
   it("insulationPreset=custom 表示時の hint fallback (energy-saving description)", () => {
@@ -137,19 +137,22 @@ describe("RenovationStep interactions", () => {
   it("existingUa 変更", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     // Default of r.existingUa
-    const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[];
+    const inputs = screen.getAllByRole("textbox") as HTMLInputElement[];
     const uaInput = inputs.find((i) => Number(i.value) > 0 && Number(i.value) < 3.5)!;
     act(() => { fireEvent.change(uaInput, { target: { value: "1.5" } }); });
     expect(useHousingStore.getState().input.renovation?.existingUa).toBeCloseTo(1.5);
   });
 
-  it("existingC 変更で 0 fallback", () => {
+  it("existingC: 不正値は反映せず、離れたときに理由を出す", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
-    const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[];
+    const inputs = screen.getAllByRole("textbox") as HTMLInputElement[];
     // existingC ranges from about 1 to a few tens
     const cInput = inputs.find((i) => i.id === "existingC")!;
+    const before = useHousingStore.getState().input.renovation?.existingCValue;
     act(() => { fireEvent.change(cInput, { target: { value: "xx" } }); });
-    expect(useHousingStore.getState().input.renovation?.existingCValue).toBe(0);
+    act(() => { fireEvent.blur(cInput); });
+    expect(useHousingStore.getState().input.renovation?.existingCValue).toBe(before);
+    expect(screen.getByText(/数値を入力してください/)).toBeTruthy();
   });
 
   it("リフォーム項目のチェックで items 追加→削除", () => {
@@ -179,12 +182,11 @@ describe("ScenarioStep interactions", () => {
     expect(after).not.toBe(before);
   });
 
-  it("計算するボタンで calculate + onNext", () => {
+  it("結果を見るボタンで onNext (calculation runs on the results step)", () => {
     const onNext = vi.fn();
     render(<ScenarioStep onNext={onNext} onBack={() => {}} />);
-    fireEvent.click(screen.getByText("計算する"));
+    fireEvent.click(screen.getByText("結果を見る"));
     expect(onNext).toHaveBeenCalled();
-    expect(useHousingStore.getState().result).not.toBeNull();
   });
 
   it("renovation モードでも描画", () => {
@@ -197,28 +199,28 @@ describe("ScenarioStep interactions", () => {
 });
 
 describe("EconomyStep additional", () => {
-  it("電気料金: 不正値で 0 fallback", () => {
+  it("電気料金: 不正値は反映しない", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const ePrice = screen.getByDisplayValue("32") as HTMLInputElement;
     act(() => { fireEvent.change(ePrice, { target: { value: "xx" } }); });
-    expect(useHousingStore.getState().input.electricityPriceBuy).toBe(0);
+    expect(useHousingStore.getState().input.electricityPriceBuy).toBe(32);
   });
 
-  it("ガス料金: 不正値で 0 fallback", () => {
+  it("ガス料金: 不正値は反映しない", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const gas = screen.getByDisplayValue("200") as HTMLInputElement;
     act(() => { fireEvent.change(gas, { target: { value: "xx" } }); });
-    expect(useHousingStore.getState().input.gasPrice).toBe(0);
+    expect(useHousingStore.getState().input.gasPrice).toBe(200);
   });
 
-  it("FIT/卒FIT 売電単価: 不正値で 0", () => {
+  it("FIT/卒FIT 売電単価: 不正値は反映しない", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const fit = screen.getByDisplayValue("15") as HTMLInputElement;
     act(() => { fireEvent.change(fit, { target: { value: "xx" } }); });
-    expect(useHousingStore.getState().input.sellPriceFit).toBe(0);
+    expect(useHousingStore.getState().input.sellPriceFit).toBe(15);
     const post = screen.getByDisplayValue("8") as HTMLInputElement;
     act(() => { fireEvent.change(post, { target: { value: "xx" } }); });
-    expect(useHousingStore.getState().input.sellPricePostFit).toBe(0);
+    expect(useHousingStore.getState().input.sellPricePostFit).toBe(8);
   });
 });
 

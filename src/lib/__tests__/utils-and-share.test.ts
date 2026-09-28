@@ -72,6 +72,22 @@ describe("share/encoder", () => {
     expect(back?.appliedSubsidyIds).toEqual(["zeh"]);
   });
 
+  it("decodes a token whose '+' arrived percent-encoded from the route param", () => {
+    // Find an input whose token contains '+', as real share links usually do
+    let token = "";
+    for (let area = 30; area <= 500 && !token.includes("+"); area++) {
+      token = encodeInput({ ...input, floorArea: area });
+    }
+    expect(token).toContain("+");
+    const fromParams = token.replace(/\+/g, "%2B");
+    expect(decodeInput(fromParams)).toEqual(decodeInput(token));
+    expect(decodeInput(fromParams)).not.toBeNull();
+  });
+
+  it("falls back to the raw token when percent-decoding fails", () => {
+    expect(decodeInput("%E0%A4%A")).toBeNull();
+  });
+
   it("decodeInput: 不正な token は null", () => {
     expect(decodeInput("!!!invalid!!!")).toBeNull();
   });

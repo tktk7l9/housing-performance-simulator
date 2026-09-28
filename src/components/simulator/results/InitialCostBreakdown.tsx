@@ -4,28 +4,33 @@ import { calcInitialCost } from "@/lib/housing/cost";
 import { formatManYen } from "@/lib/utils";
 import type { SimulationOutput } from "@/lib/housing/types";
 
+const ROW_KEYS = ["insulation", "renovation", "solar", "battery", "waterHeater", "heating", "hems"] as const;
+
 export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
+  const breakdowns = output.scenarios.map((s) => calcInitialCost(findScenarioInput(output, s.scenarioId)));
+  // SHIG 1: drop rows that are zero for every scenario (e.g. renovation work in new-build mode)
+  const rows = ROW_KEYS.filter((key) => breakdowns.some((b) => b[key] > 0));
+  // SHIG 85 / 95 / 52: sticky, non-wrapping label column; the table scrolls sideways when narrow
+  const labelCell = "sticky left-0 z-10 bg-card py-2 pr-4 whitespace-nowrap";
   return (
+    <div className="flex flex-col gap-2">
+    <p className="text-xs text-muted-foreground md:hidden">表は横にスクロールできます →</p>
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full min-w-max text-sm">
         <thead className="border-b text-left">
           <tr className="text-xs uppercase tracking-wider text-muted-foreground">
-            <th className="py-2 pr-4">項目</th>
+            <th className={labelCell}>項目</th>
             {output.scenarios.map((s) => (
               <th key={s.scenarioId} className="py-2 px-2 text-right whitespace-nowrap">{s.scenarioName}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {(["insulation", "renovation", "solar", "battery", "waterHeater", "heating", "hems"] as const).map((key) => (
+          {rows.map((key) => (
             <tr key={key} className="border-b last:border-b-0">
-              <td className="py-2 pr-4 text-muted-foreground">{LABELS[key]}</td>
-              {output.scenarios.map((s) => {
-                const breakdown = calcInitialCost(
-                  s.scenarioId === output.baselineId
-                    ? findScenarioInput(output, output.baselineId)
-                    : findScenarioInput(output, s.scenarioId)
-                );
+              <td className={`${labelCell} text-muted-foreground`}>{LABELS[key]}</td>
+              {output.scenarios.map((s, i) => {
+                const breakdown = breakdowns[i];
                 return (
                   <td key={s.scenarioId} className="py-2 px-2 text-right font-mono">
                     {breakdown[key] > 0 ? formatManYen(breakdown[key]) : "—"}
@@ -35,7 +40,7 @@ export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
             </tr>
           ))}
           <tr className="font-semibold">
-            <td className="py-2 pr-4">補助金（控除）</td>
+            <td className={labelCell}>補助金（控除）</td>
             {output.scenarios.map((s) => (
               <td key={s.scenarioId} className="py-2 px-2 text-right font-mono text-green-700">
                 {s.subsidyTotal > 0 ? `-${formatManYen(s.subsidyTotal)}` : "—"}
@@ -43,7 +48,7 @@ export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
             ))}
           </tr>
           <tr className="border-t-2">
-            <td className="py-2 pr-4 font-semibold">合計（補助後）</td>
+            <td className={`${labelCell} font-semibold`}>合計（補助後）</td>
             {output.scenarios.map((s) => (
               <td key={s.scenarioId} className="py-2 px-2 text-right font-mono font-semibold">
                 {formatManYen(s.initialCostNet)}
@@ -52,6 +57,7 @@ export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
           </tr>
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

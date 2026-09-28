@@ -24,6 +24,8 @@ export function TrailSidebar() {
   const savedCount = useHousingStore((s) => s.savedSimulations.length);
 
   const [savedOpen, setSavedOpen] = useState(false);
+  // SHIG 82 / 20: on small screens the full list collapses into one progress line
+  const [listOpen, setListOpen] = useState(false);
 
   const stepIds = getStepIds(input.mode);
 
@@ -38,15 +40,32 @@ export function TrailSidebar() {
     if (id === "equipment") return `太陽光 ${input.solarCapacity}kW / 蓄電池 ${input.batteryCapacity}kWh`;
     if (id === "economy") return `電気 ${input.electricityPriceBuy}円/kWh`;
     if (id === "renovation") {
-      const items = input.renovation?.items.length ?? 0;
-      return `${input.renovation?.ageBracket ?? "—"} / ${items}項目`;
+      // SHIG 1: no "— / 0項目" placeholder before the step is filled
+      if (!input.renovation) return null;
+      return `${input.renovation.ageBracket} / ${input.renovation.items.length}項目`;
     }
     return null;
   };
 
+  const safeCurrent = Math.min(currentStep, stepIds.length - 1);
+
   return (
-    <nav className="flex flex-col gap-1.5 p-4">
-      <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Steps</div>
+    <nav className="flex flex-col gap-1.5 p-2 lg:p-4" aria-label="ステップ">
+      <button
+        type="button"
+        onClick={() => setListOpen((v) => !v)}
+        aria-expanded={listOpen}
+        aria-controls="trail-step-list"
+        className="lg:hidden flex min-h-11 w-full items-center justify-between rounded-md px-2 text-sm"
+      >
+        <span>
+          <span className="text-muted-foreground">ステップ {safeCurrent + 1} / {stepIds.length}</span>
+          <span className="ml-2 font-medium">{STEP_LABELS[stepIds[safeCurrent]]}</span>
+        </span>
+        <ChevronDown className={cn("h-4 w-4 transition-transform", listOpen && "rotate-180")} />
+      </button>
+      <div id="trail-step-list" className={cn("flex-col gap-1.5 lg:flex", listOpen ? "flex" : "hidden")}>
+      <div className="hidden lg:block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">Steps</div>
       {stepIds.map((id, idx) => {
         const isCurrent = idx === currentStep;
         const isVisited = visitedSteps.has(idx);
@@ -56,7 +75,11 @@ export function TrailSidebar() {
           <button
             key={id}
             type="button"
-            onClick={() => setStep(idx)}
+            onClick={() => {
+              setStep(idx);
+              setListOpen(false);
+            }}
+            aria-current={isCurrent ? "step" : undefined}
             className={cn(
               "text-left rounded-md px-3 py-2",
               isCurrent && "bg-accent text-accent-foreground",
@@ -85,12 +108,13 @@ export function TrailSidebar() {
           </button>
         );
       })}
+      </div>
 
       <div className="mt-4 border-t pt-3">
         <button
           type="button"
           onClick={() => setSavedOpen((v) => !v)}
-          className="w-full flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted text-sm"
+          className="w-full flex min-h-11 items-center justify-between rounded-md px-2 hover:bg-muted text-sm"
           aria-expanded={savedOpen}
         >
           <span className="flex items-center gap-2">

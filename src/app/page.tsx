@@ -67,7 +67,7 @@ export default function Home() {
 
       <section id="how" className="border-b">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-20">
-          <h2 className="text-2xl font-semibold tracking-tight mb-10">5ステップで完了</h2>
+          <h2 className="text-2xl font-semibold tracking-tight mb-10">5〜6ステップで完了</h2>
           <ol className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {[
               "建物条件",

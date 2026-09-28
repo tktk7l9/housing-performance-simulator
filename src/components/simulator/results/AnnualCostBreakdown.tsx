@@ -5,12 +5,14 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import type { ScenarioResult } from "@/lib/housing/types";
+import { WrappedTick } from "./chartLabels";
 
 interface Props {
   scenarios: ScenarioResult[];
@@ -38,12 +40,14 @@ export function AnnualCostBreakdown({ scenarios, electricityPrice, gasPrice, sel
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer>
-        <BarChart data={data} margin={{ top: 10, right: 16, bottom: 10, left: 0 }}>
+        {/* SHIG 28: stackOffset="sign" draws feed-in revenue below zero instead of stacking it like a cost */}
+        <BarChart data={data} stackOffset="sign" margin={{ top: 10, right: 16, bottom: 10, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.90 0.01 220)" />
-          <XAxis dataKey="name" fontSize={11} />
+          <XAxis dataKey="name" interval={0} height={48} tick={<WrappedTick maxChars={7} />} />
           <YAxis tickFormatter={(v) => `${v}`} fontSize={11} label={{ value: "千円/年", position: "insideTopLeft", fontSize: 11 }} />
           <Tooltip formatter={(v) => `${Number(v).toLocaleString()} 千円`} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
+          <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.5} />
           <Bar dataKey="暖冷房" stackId="a" fill="var(--chart-3)" />
           <Bar dataKey="給湯" stackId="a" fill="var(--chart-4)" />
           <Bar dataKey="その他家電" stackId="a" fill="var(--chart-5)" />

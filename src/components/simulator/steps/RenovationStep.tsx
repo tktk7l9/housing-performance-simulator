@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useHousingStore } from "@/store/housingStore";
@@ -79,26 +79,22 @@ export function RenovationStep({ onNext, onBack }: { onNext: () => void; onBack:
         </Field>
 
         <Field id="existingUa" label="現状 UA 値" unit="W/(m²·K)" hint="築年代から自動推定。手動上書き可。">
-          <Input
+          <NumberInput
             id="existingUa"
-            type="number"
-            step={0.01}
             min={0.1}
             max={3.5}
             value={r.existingUa}
-            onChange={(e) => setR({ existingUa: Number(e.target.value) || 0 })}
+            onValueChange={(n) => setR({ existingUa: n })}
           />
         </Field>
 
         <Field id="existingC" label="現状 C 値" unit="cm²/m²">
-          <Input
+          <NumberInput
             id="existingC"
-            type="number"
-            step={0.1}
             min={0.1}
             max={15}
             value={r.existingCValue}
-            onChange={(e) => setR({ existingCValue: Number(e.target.value) || 0 })}
+            onValueChange={(n) => setR({ existingCValue: n })}
           />
         </Field>
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { SavedList } from "../SavedList";
 import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios } from "@/store/housingStore";
@@ -49,7 +49,7 @@ describe("SavedList interactions", () => {
     expect(screen.getAllByText(/新築/).length).toBeGreaterThan(0);
   });
 
-  it("復元ボタンクリックで loadSaved + setTimeout(calculate)", () => {
+  it("復元ボタンクリックで loadSaved", () => {
     useHousingStore.setState({
       savedSimulations: [{
         id: "s1", name: "X", savedAt: new Date().toISOString(), schemaVersion: 2,
@@ -62,33 +62,15 @@ describe("SavedList interactions", () => {
     expect(useHousingStore.getState().input.floorArea).toBe(200);
   });
 
-  it("削除ボタン (confirm OK) で deleteSaved", () => {
+  it("削除ボタンで確認なしに deleteSaved (undo is covered in failsafe.test.tsx)", () => {
     useHousingStore.setState({
       savedSimulations: [{
         id: "s1", name: "X", savedAt: new Date().toISOString(), schemaVersion: 2,
         input: DEFAULT_INPUT,
       }],
     });
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<SavedList />);
-    const del = screen.getByLabelText("削除");
-    act(() => { fireEvent.click(del); });
+    act(() => { fireEvent.click(screen.getByLabelText("「X」を削除")); });
     expect(useHousingStore.getState().savedSimulations).toHaveLength(0);
-    confirmSpy.mockRestore();
-  });
-
-  it("削除ボタン (confirm キャンセル) は何もしない", () => {
-    useHousingStore.setState({
-      savedSimulations: [{
-        id: "s1", name: "X", savedAt: new Date().toISOString(), schemaVersion: 2,
-        input: DEFAULT_INPUT,
-      }],
-    });
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
-    render(<SavedList />);
-    const del = screen.getByLabelText("削除");
-    act(() => { fireEvent.click(del); });
-    expect(useHousingStore.getState().savedSimulations).toHaveLength(1);
-    confirmSpy.mockRestore();
   });
 });

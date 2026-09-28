@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { useHousingStore, getStepIds, type StepId } from "@/store/housingStore";
 import { TrailSidebar } from "./TrailSidebar";
+import { ToastHost } from "./ToastHost";
 import { BuildingStep } from "./steps/BuildingStep";
 import { PerformanceStep } from "./steps/PerformanceStep";
 import { EquipmentStep } from "./steps/EquipmentStep";
@@ -36,7 +38,16 @@ export function SimulatorApp() {
   }, [currentStep]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 max-w-[1200px] mx-auto px-5 md:px-8 py-8">
+    <>
+    {/* SHIG 59 / 60: app name + a way back to the top page (no browser back in standalone PWA) */}
+    <header className="border-b">
+      <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-3 flex items-center justify-between">
+        <Link href="/" prefetch={false} className="inline-flex min-h-11 items-center font-semibold tracking-tight">
+          住宅性能シミュレーター
+        </Link>
+      </div>
+    </header>
+    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 lg:gap-6 max-w-[1200px] w-full mx-auto px-5 md:px-8 py-4 lg:py-8">
       <aside className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto rounded-lg border bg-card">
         <TrailSidebar />
       </aside>
@@ -50,5 +61,7 @@ export function SimulatorApp() {
         {stepId === "results" && <ResultsStep onBack={goBack} />}
       </main>
     </div>
+    <ToastHost />
+    </>
   );
 }

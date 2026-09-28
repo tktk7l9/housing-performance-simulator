@@ -44,7 +44,8 @@ export function getStepIds(mode: SimulationMode): readonly StepId[] {
   return mode === "renovation" ? STEP_IDS_RENOVATION : STEP_IDS_NEW_BUILD;
 }
 
-const SAVED_LIMIT = 20;
+/** Maximum number of saved simulations; saving beyond this drops the oldest. */
+export const SAVED_LIMIT = 20;
 
 interface HousingStore {
   currentStep: number;
@@ -53,6 +54,8 @@ interface HousingStore {
   selectedScenarioIds: string[];
   result: SimulationOutput | null;
   isCalculating: boolean;
+  /** The last calculate() threw; the results step shows a retry instead of spinning forever. */
+  calculateFailed: boolean;
   savedSimulations: SavedSimulation[];
 
   setStep: (step: number) => void;
@@ -68,7 +71,10 @@ interface HousingStore {
 
   saveCurrent: (name: string) => SavedSimulation;
   loadSaved: (id: string) => void;
-  deleteSaved: (id: string) => void;
+  /** Removes an entry and returns it with its position so the caller can offer undo. */
+  deleteSaved: (id: string) => { entry: SavedSimulation; index: number } | undefined;
+  /** Puts a deleted entry back at its former position (undo). */
+  restoreSaved: (entry: SavedSimulation, index: number) => void;
 }
 
 export const DEFAULT_INPUT: HousingInput = {
@@ -128,6 +134,7 @@ export const useHousingStore = create<HousingStore>()(
       selectedScenarioIds: DEFAULT_SELECTED_SCENARIOS_NEW_BUILD,
       result: null,
       isCalculating: false,
+      calculateFailed: false,
       savedSimulations: [],
 
       setStep: (step) =>
@@ -143,7 +150,9 @@ export const useHousingStore = create<HousingStore>()(
           return { visitedSteps: visited };
         }),
 
-      updateInput: (patch) => set((s) => ({ input: { ...s.input, ...patch } })),
+      // Any input change invalidates the result so the results step never shows stale numbers
+      // (SHIG 35: data binding). ResultsStep recalculates whenever result is null.
+      updateInput: (patch) => set((s) => ({ input: { ...s.input, ...patch }, result: null })),
 
       setMode: (mode) =>
         set((s) => ({
@@ -159,6 +168,7 @@ export const useHousingStore = create<HousingStore>()(
           if (!prefecture) {
             return {
               input: { ...s.input, addressPrefecture: undefined, addressCity: undefined },
+              result: null,
             };
           }
           const { region } = lookupRegion(prefecture, city);
@@ -176,19 +186,21 @@ export const useHousingStore = create<HousingStore>()(
               region,
               uaValue: ua,
             },
+            result: null,
           };
         }),
 
-      setSelectedScenarioIds: (ids) => set({ selectedScenarioIds: ids }),
+      setSelectedScenarioIds: (ids) => set({ selectedScenarioIds: ids, result: null }),
       toggleScenario: (id) =>
         set((s) => ({
           selectedScenarioIds: s.selectedScenarioIds.includes(id)
             ? s.selectedScenarioIds.filter((x) => x !== id)
             : [...s.selectedScenarioIds, id],
+          result: null,
         })),
 
       calculate: () => {
-        set({ isCalculating: true });
+        set({ isCalculating: true, calculateFailed: false });
         try {
           const { input, selectedScenarioIds } = get();
           const all = buildAllScenarios(input);
@@ -198,7 +210,7 @@ export const useHousingStore = create<HousingStore>()(
           set({ result, isCalculating: false });
         } catch (e) {
           console.error("calculate failed", e);
-          set({ isCalculating: false });
+          set({ isCalculating: false, calculateFailed: true });
         }
       },
 
@@ -258,10 +270,22 @@ export const useHousingStore = create<HousingStore>()(
         });
       },
 
-      deleteSaved: (id) =>
-        set((s) => ({
-          savedSimulations: s.savedSimulations.filter((x) => x.id !== id),
-        })),
+      deleteSaved: (id) => {
+        const list = get().savedSimulations;
+        const index = list.findIndex((x) => x.id === id);
+        if (index < 0) return undefined;
+        const entry = list[index];
+        set({ savedSimulations: list.filter((x) => x.id !== id) });
+        return { entry, index };
+      },
+
+      restoreSaved: (entry, index) =>
+        set((s) => {
+          if (s.savedSimulations.some((x) => x.id === entry.id)) return {};
+          const next = [...s.savedSimulations];
+          next.splice(Math.min(index, next.length), 0, entry);
+          return { savedSimulations: next.slice(0, SAVED_LIMIT) };
+        }),
     }),
     {
       name: "housing-performance-simulator",
