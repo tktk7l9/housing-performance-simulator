@@ -66,8 +66,8 @@ const LABELS: Record<string, string> = {
   hems: "HEMS",
 };
 
-// シナリオの input は output には直接保持されないため、scenarioId から再構築する代わりに
-// presets を再ビルドして lookup する。
+// The scenario input is not kept in the output directly, so instead of reconstructing it
+// from scenarioId, rebuild the presets and look it up.
 import { buildAllScenarios } from "@/lib/housing/presets";
 import type { HousingInput } from "@/lib/housing/types";
 

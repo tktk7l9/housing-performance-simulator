@@ -1,7 +1,7 @@
-// 築年代から既存住宅の性能を推定する代表値テーブル
+// Table of representative values for estimating existing-house performance from construction era
 //
-// 出典: 国交省「住宅省エネ基準の変遷」概要、国総研報告から代表値を抜粋。
-// 6 地域基準で UA を提示。実物件は仕様で大きく変動するため、ヒント値として扱う。
+// Source: representative values excerpted from MLIT's overview of "住宅省エネ基準の変遷" (history of housing energy standards) and NILIM reports.
+// UA is given for region 6. Actual houses vary widely by spec, so treat these as hint values.
 // lastUpdated: 2026-04
 
 import type { AgeBracket, RegionId, WindowSpecId } from "../types";
@@ -9,11 +9,11 @@ import type { AgeBracket, RegionId, WindowSpecId } from "../types";
 export interface AgePresetData {
   id: AgeBracket;
   label: string;
-  /** 6 地域基準の UA 値 */
+  /** UA value for region 6 */
   uaBase: number;
-  /** C 値の代表値（cm²/m²） */
+  /** Representative C value (cm²/m²) */
   cValue: number;
-  /** 代表的な窓仕様 */
+  /** Representative window spec */
   window: WindowSpecId;
   description: string;
 }
@@ -54,8 +54,8 @@ export const AGE_PRESETS: Record<AgeBracket, AgePresetData> = {
 };
 
 /**
- * 地域別の補正：寒冷地ほど既存住宅も(やや)断熱が強い傾向を反映する単純な比率。
- * UA は 6 地域基準。1〜3 地域は 0.85倍（より断熱されている代表値）、6〜8 はそのまま。
+ * Regional adjustment: a simple ratio reflecting that existing houses in colder regions tend to be (somewhat) better insulated.
+ * UA is based on region 6. Regions 1-3 use 0.85x (more insulated representative value), 6-8 are unchanged.
  */
 export function uaForAge(bracket: AgeBracket, region: RegionId): number {
   const base = AGE_PRESETS[bracket].uaBase;

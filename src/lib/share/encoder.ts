@@ -1,8 +1,8 @@
-// 入力を URL トークン化（lz-string + base64url）
+// Turn input into a URL token (lz-string + base64url)
 //
-// envelope（schemaVersion + input）を JSON 化して圧縮する。
-// 旧形式のトークン（envelope を持たない素の HousingInput）も
-// 復号時に schema.ts の `unwrapEnvelope` でフォールバックさせる。
+// Serialize the envelope (schemaVersion + input) to JSON and compress it.
+// Old-format tokens (a bare HousingInput without an envelope) also
+// fall back through `unwrapEnvelope` in schema.ts when decoded.
 
 import LZString from "lz-string";
 import type { HousingInput } from "@/lib/housing/types";

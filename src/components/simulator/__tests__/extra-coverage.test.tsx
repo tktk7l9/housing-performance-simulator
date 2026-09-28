@@ -1,16 +1,16 @@
 /**
- * カバレッジ追加用のテスト集約。
- * 対象:
- * - BuildingStep: addressPrefecture/addressCity/region/presence 切替
+ * Collection of tests added for coverage.
+ * Targets:
+ * - BuildingStep: switching addressPrefecture/addressCity/region/presence
  * - PerformanceStep: presetChange (custom / non-custom), cValue, windowSpec
  * - RenovationStep: ageBracket/UA/C/window/heater/heating, item toggle
- * - ScenarioStep: チェックボックスで toggleScenario / 「計算する」で calculate+onNext
- * - EconomyStep: electricityRise セレクト、subsidy 適用ボタン分岐
- * - SaveDialog: form submit / cancel / outer onOpenChange / ESC / バックドロップクリック
- * - SimulatorApp: setStep 変更で scroll が走る経路、ResultsStep への遷移
- * - Input ui: onFocus(select)/onWheel(blur) を type=number で発火
- * - Dialog ui: ESC キーで close
- * - SensitivityChart: 入力値違いでの再描画
+ * - ScenarioStep: toggleScenario via checkbox / calculate+onNext via "計算する"
+ * - EconomyStep: electricityRise select, subsidy apply-button branches
+ * - SaveDialog: form submit / cancel / outer onOpenChange / ESC / backdrop click
+ * - SimulatorApp: the path where a setStep change triggers scrolling, moving on to ResultsStep
+ * - Input ui: fire onFocus(select)/onWheel(blur) on type=number
+ * - Dialog ui: close with the ESC key
+ * - SensitivityChart: re-render with different input values
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
@@ -52,7 +52,7 @@ beforeEach(() => {
 describe("BuildingStep additional interactions", () => {
   it("addressPrefecture 設定で setAddress 経由 region 更新", () => {
     render(<BuildingStep onNext={() => {}} />);
-    // Radix Select は jsdom で完全に動かないので、setAddress を直接呼ぶ
+    // Radix Select does not fully work in jsdom, so call setAddress directly
     act(() => {
       useHousingStore.getState().setAddress("北海道");
     });
@@ -85,7 +85,7 @@ describe("BuildingStep additional interactions", () => {
       input: { ...DEFAULT_INPUT, addressPrefecture: "東京都" },
     });
     render(<BuildingStep onNext={() => {}} />);
-    // 説明文が描画される（市町村セレクトの hint いずれか）
+    // Description text is rendered (one of the city select hints)
     expect(
       screen.getAllByText(/(代表都市|例外市町村)/).length,
     ).toBeGreaterThan(0);
@@ -122,7 +122,7 @@ describe("PerformanceStep additional", () => {
   it("insulationPreset=custom 表示時の hint fallback (energy-saving description)", () => {
     useHousingStore.setState({ input: { ...DEFAULT_INPUT, insulationPreset: "custom" } });
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
-    // フィールド hint が描画される (Field 経由)
+    // Field hint is rendered (via Field)
     expect(screen.getAllByText(/省エネ基準|断熱/).length).toBeGreaterThan(0);
   });
 });
@@ -136,7 +136,7 @@ describe("RenovationStep interactions", () => {
 
   it("existingUa 変更", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
-    // r.existingUa のデフォルト
+    // Default of r.existingUa
     const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[];
     const uaInput = inputs.find((i) => Number(i.value) > 0 && Number(i.value) < 3.5)!;
     act(() => { fireEvent.change(uaInput, { target: { value: "1.5" } }); });
@@ -146,7 +146,7 @@ describe("RenovationStep interactions", () => {
   it("existingC 変更で 0 fallback", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const inputs = screen.getAllByRole("spinbutton") as HTMLInputElement[];
-    // existingC は値が 1〜数十程度
+    // existingC ranges from about 1 to a few tens
     const cInput = inputs.find((i) => i.id === "existingC")!;
     act(() => { fireEvent.change(cInput, { target: { value: "xx" } }); });
     expect(useHousingStore.getState().input.renovation?.existingCValue).toBe(0);
@@ -172,7 +172,7 @@ describe("ScenarioStep interactions", () => {
   it("通常シナリオのチェックで toggleScenario", () => {
     render(<ScenarioStep onNext={() => {}} onBack={() => {}} />);
     const boxes = screen.getAllByRole("checkbox");
-    // 1つ目は基準 (disabled) なので 2つ目を toggle
+    // The first one is the baseline (disabled), so toggle the second
     const before = useHousingStore.getState().selectedScenarioIds.length;
     act(() => { fireEvent.click(boxes[1]); });
     const after = useHousingStore.getState().selectedScenarioIds.length;
@@ -226,7 +226,7 @@ describe("SaveDialog interactions", () => {
   it("name 空のまま送信で placeholder が適用される", () => {
     const onOpenChange = vi.fn();
     render(<SaveDialog open onOpenChange={onOpenChange} />);
-    // 「保存する」ボタン
+    // The "保存する" (save) button
     const submitBtn = screen.getByText("保存する").closest("button")!;
     act(() => { fireEvent.click(submitBtn); });
     expect(useHousingStore.getState().savedSimulations.length).toBe(1);
@@ -247,12 +247,12 @@ describe("SaveDialog interactions", () => {
     const { rerender } = render(<SaveDialog open onOpenChange={onOpenChange} />);
     const inputs = screen.getAllByRole("textbox");
     act(() => { fireEvent.change(inputs[0], { target: { value: "hoge" } }); });
-    // 閉じるボタン (aria-label="閉じる")
+    // Close button (aria-label="閉じる")
     const closeBtn = screen.getByLabelText("閉じる");
     act(() => { fireEvent.click(closeBtn); });
     expect(onOpenChange).toHaveBeenCalledWith(false);
     rerender(<SaveDialog open onOpenChange={onOpenChange} />);
-    // name は state クリア後の "" 状態（placeholder 表示）
+    // name is "" after the state is cleared (placeholder shown)
     expect((screen.getAllByRole("textbox")[0] as HTMLInputElement).value).toBe("");
   });
 
@@ -339,7 +339,7 @@ describe("SimulatorApp step transitions", () => {
   it("setStep 変更で scroll を発火", () => {
     const scrollSpy = vi.fn();
     Object.defineProperty(window, "scrollTo", { value: scrollSpy, writable: true });
-    // main 要素の getBoundingClientRect を mock して top を遠くにする
+    // Mock getBoundingClientRect on the main element to push top far away
     const origRect = Element.prototype.getBoundingClientRect;
     Element.prototype.getBoundingClientRect = function () {
       return { top: 500, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({}) };
@@ -355,7 +355,7 @@ describe("SimulatorApp step transitions", () => {
   it("ResultsStep への遷移", () => {
     useHousingStore.setState({ currentStep: 5 });
     render(<SimulatorApp />);
-    // ResultsStep は title「結果」を描画
+    // ResultsStep renders the title "結果"
     expect(screen.getAllByText(/結果|総評/).length).toBeGreaterThan(0);
   });
 

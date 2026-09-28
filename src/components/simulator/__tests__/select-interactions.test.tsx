@@ -1,12 +1,12 @@
 /**
- * Radix Select は jsdom で開けないため、ui/select を素の <select> に差し替えて
- * onValueChange ハンドラの分岐を網羅する。
+ * Radix Select cannot be opened in jsdom, so ui/select is replaced with a plain <select>
+ * to cover the branches of the onValueChange handlers.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 
-// Select系を素のセレクトに差し替え
+// Replace the Select components with a plain select
 vi.mock("@/components/ui/select", () => {
   type SelectProps = {
     value?: string;
@@ -15,7 +15,7 @@ vi.mock("@/components/ui/select", () => {
     disabled?: boolean;
   };
   function Select({ value, onValueChange, children, disabled }: SelectProps) {
-    // children 内の SelectItem の value を抽出
+    // Extract the values of SelectItem inside children
     const items: { value: string; label: React.ReactNode }[] = [];
     const walk = (node: React.ReactNode) => {
       React.Children.forEach(node, (child) => {
@@ -83,7 +83,7 @@ function selects() {
 describe("BuildingStep select handlers", () => {
   it("region 変更で region/uaValue 同期更新", () => {
     render(<BuildingStep onNext={() => {}} />);
-    // 4つめあたりが region: value=6 のもの
+    // Around the fourth one is region: value=6
     const regionSel = selects().find((s) => s.value === "6")!;
     act(() => { fireEvent.change(regionSel, { target: { value: "1" } }); });
     expect(useHousingStore.getState().input.region).toBe(1);
@@ -121,10 +121,10 @@ describe("BuildingStep select handlers", () => {
       input: { ...DEFAULT_INPUT, addressPrefecture: "北海道" },
     });
     render(<BuildingStep onNext={() => {}} />);
-    // city select は 2つめ
+    // The city select is the second one
     const citySel = selects()[1];
     const opts = Array.from(citySel.options).map((o) => o.value);
-    // 何らかの都市候補があれば
+    // If there is any city candidate
     const cityValue = opts.find((v) => v !== "__none__");
     if (cityValue) {
       act(() => { fireEvent.change(citySel, { target: { value: cityValue } }); });
@@ -144,10 +144,10 @@ describe("BuildingStep select handlers", () => {
 
   it("addressPrefecture 未設定で onCityChange は何もしない (early return)", () => {
     render(<BuildingStep onNext={() => {}} />);
-    // City select は disabled 想定だが、無理に change を発火
+    // The city select is expected to be disabled, but fire change anyway
     const citySel = selects()[1];
     act(() => { fireEvent.change(citySel, { target: { value: "" } }); });
-    // addressPrefecture が undefined のままで、city も undefined のまま
+    // addressPrefecture stays undefined, and city stays undefined too
     expect(useHousingStore.getState().input.addressPrefecture).toBeUndefined();
   });
 
@@ -249,7 +249,7 @@ describe("RenovationStep selects", () => {
   it("existingWindow 変更", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const sels = selects();
-    // existingWindow は ageBracket の次あたり
+    // existingWindow comes around right after ageBracket
     const winSel = sels.find((s) =>
       Array.from(s.options).some((o) => o.value === "alum-resin-pair-lowe"),
     )!;

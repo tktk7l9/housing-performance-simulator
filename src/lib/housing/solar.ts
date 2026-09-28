@@ -1,7 +1,7 @@
-// 太陽光発電量の概算
+// Rough solar generation estimate
 //
-// 年間発電量 = kW × 地域水平面年間日射量(kWh/m²) × 方位係数 × 傾斜係数 × 損失係数
-// (1kW のパネルが受光する有効面積を含めた簡易換算式)
+// Annual generation = kW × regional horizontal annual irradiation (kWh/m²) × orientation factor × tilt factor × loss factor
+// (simplified conversion that includes the effective receiving area of a 1kW panel)
 
 import type { HousingInput } from "./types";
 import {
@@ -12,7 +12,7 @@ import {
 } from "./data/solarIrradiance";
 
 export interface SolarResult {
-  /** 年間発電量 kWh/年 */
+  /** Annual generation kWh/year */
   annualKwh: number;
 }
 

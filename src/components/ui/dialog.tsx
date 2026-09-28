@@ -14,8 +14,8 @@ interface DialogProps {
 }
 
 /**
- * 軽量な制御モーダル。Radix を使わず、ESC とバックドロップクリックで閉じる。
- * フォーカストラップは省略（短い入力フォーム想定）。
+ * Lightweight controlled modal. Does not use Radix; closes on ESC and backdrop click.
+ * Focus trap is omitted (intended for short input forms).
  */
 export function Dialog({ open, onOpenChange, title, description, children, className }: DialogProps) {
   React.useEffect(() => {

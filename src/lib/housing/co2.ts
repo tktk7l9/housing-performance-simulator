@@ -1,7 +1,7 @@
-// CO2 排出量計算
+// CO2 emissions calculation
 //
-// 年間 CO2 = (買電量 × 電気係数) + (ガス消費 × ガス係数)
-// 売電は系統に戻すため家庭の排出にはカウントしない（簡易）。
+// Annual CO2 = (purchased electricity × electricity factor) + (gas consumption × gas factor)
+// Sold electricity goes back to the grid, so it is not counted in household emissions (simplified).
 
 import { CO2_EMISSION_FACTOR_ELECTRICITY, CO2_EMISSION_FACTOR_GAS } from "./data/co2";
 

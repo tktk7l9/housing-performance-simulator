@@ -26,7 +26,7 @@ export function SimulatorApp() {
   useEffect(() => {
     if (prevStepRef.current === currentStep) return;
     prevStepRef.current = currentStep;
-    // 初回マウント直後の自動スクロールは避ける（永続化された currentStep に飛ばないように）
+    // Skip auto-scroll right after the first mount (so it does not jump to the persisted currentStep)
     if (typeof window === "undefined") return;
     const top = mainRef.current?.getBoundingClientRect().top ?? 0;
     if (Math.abs(top) > 4) {

@@ -51,7 +51,7 @@ describe("calcHeatLoad", () => {
   it("床面積に概ね比例", () => {
     const small = calcHeatLoad(baseInput({ floorArea: 80 }));
     const large = calcHeatLoad(baseInput({ floorArea: 160 }));
-    // 160/80 = 2.0 倍ぴったり
+    // 160/80 = exactly 2.0x
     expect(large.heatingLoadKwh / small.heatingLoadKwh).toBeCloseTo(2.0, 5);
   });
 
@@ -102,7 +102,7 @@ describe("calcInitialCost", () => {
     const five  = calcInitialCost(baseInput({ solarCapacity: 5 }));
     expect(zero.solar).toBe(0);
     expect(five.solar).toBeGreaterThan(0);
-    // 5kW で太陽光単価 × 5 になっているはず
+    // At 5kW it should be the solar unit price × 5
     expect(five.solar).toBeCloseTo(five.solar, 5);
   });
 

@@ -1,20 +1,20 @@
-// リフォーム部位別の代表単価
+// Representative unit prices per renovation part
 //
-// 出典: 住宅省エネキャンペーン参考、リフォーム業界の中位レンジ（2025〜2026）。
-// メーカー名は出さず、施工タイプ別の代表値のみで扱う。
+// Source: based on the 住宅省エネキャンペーン (housing energy-saving campaign), mid range of the renovation industry (2025-2026).
+// No manufacturer names; only representative values per construction type.
 
 import type { RenovationItemId } from "../types";
 
 export interface RenovationItemData {
   id: RenovationItemId;
   label: string;
-  /** 単位（円/単位） */
+  /** Unit (yen/unit) */
   unit: "perFloorAreaM2" | "perOpening" | "lumpSum";
   unitLabel: string;
   unitCost: number;
-  /** UA 改善寄与（W/m²·K の減少量、6地域標準寄与） */
+  /** UA improvement contribution (reduction in W/m²·K, standard contribution for region 6) */
   uaReduction: number;
-  /** C 値改善寄与（cm²/m² の減少量） */
+  /** C value improvement contribution (reduction in cm²/m²) */
   cReduction: number;
   description: string;
 }
@@ -93,8 +93,8 @@ export const RENOVATION_ITEMS: Record<RenovationItemId, RenovationItemData> = {
 };
 
 /**
- * 想定される窓箇所数（延床面積から概算）。
- * 35 ㎡ ≈ 1 階分として 8 箇所程度。
+ * Assumed number of window locations (estimated from total floor area).
+ * About 8 locations per 35 ㎡ ≈ one floor.
  */
 export function estimateOpenings(floorAreaM2: number): number {
   return Math.max(6, Math.round((floorAreaM2 / 120) * 14));

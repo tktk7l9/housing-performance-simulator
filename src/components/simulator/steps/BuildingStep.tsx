@@ -23,7 +23,7 @@ export function BuildingStep({ onNext, onBack }: { onNext: () => void; onBack?: 
     updateInput({
       region,
       ...(preset ? { uaValue: preset.uaByRegion[region] } : {}),
-      // 手動上書き時は住所連携を解除
+      // Unlink from the address on manual override
       addressPrefecture: undefined,
       addressCity: undefined,
     });

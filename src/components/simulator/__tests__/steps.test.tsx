@@ -1,6 +1,6 @@
 /**
- * 各ステップコンポーネントの基本描画とイベントハンドリングの smoke test。
- * Radix Select は jsdom で完全機能しないので、画面に出る label/title のみ検証する。
+ * Smoke tests for basic rendering and event handling of each step component.
+ * Radix Select does not fully work in jsdom, so only the on-screen label/title are checked.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -13,7 +13,7 @@ import { ResultsStep } from "../steps/ResultsStep";
 import { RenovationStep } from "../steps/RenovationStep";
 import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios } from "@/store/housingStore";
 
-// ── Recharts: ResponsiveContainer が ResizeObserver に依存。Mock ─────
+// ── Recharts: ResponsiveContainer depends on ResizeObserver. Mock ─────
 vi.mock("recharts", async (importOriginal) => {
   const actual: Record<string, unknown> = await importOriginal();
   return {
@@ -24,7 +24,7 @@ vi.mock("recharts", async (importOriginal) => {
   };
 });
 
-// PDF レンダラーは jsdom で重い + 不要なので stub
+// The PDF renderer is heavy in jsdom and unnecessary, so stub it
 vi.mock("@react-pdf/renderer", () => ({
   Document: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Page: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -92,7 +92,7 @@ describe("PerformanceStep", () => {
 
   it("UA値 input を変更", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
-    // 0.87 が UA value のデフォルト
+    // 0.87 is the default UA value
     const uaInput = screen.getByDisplayValue("0.87") as HTMLInputElement;
     fireEvent.change(uaInput, { target: { value: "0.46" } });
     expect(useHousingStore.getState().input.uaValue).toBeCloseTo(0.46);

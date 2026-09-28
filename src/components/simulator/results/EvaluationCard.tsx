@@ -95,7 +95,7 @@ function ScoreCircle({
   ringClass: string;
   textClass: string;
 }) {
-  // 円周進捗バー（svg circle）
+  // Circular progress bar (svg circle)
   const r = 38;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - score / 100);

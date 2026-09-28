@@ -1,6 +1,6 @@
-// 補助金の自動マッチ + 適用合計
+// Automatic subsidy matching + applied total
 //
-// MVP は全国対象の代表補助金のみ扱う。住所→都道府県別マッチングは Phase D 拡張。
+// The MVP only handles representative nationwide subsidies. Address -> per-prefecture matching is a Phase D extension.
 
 import type { HousingInput, SubsidyMaster } from "./types";
 import { SUBSIDIES } from "./data/subsidies";

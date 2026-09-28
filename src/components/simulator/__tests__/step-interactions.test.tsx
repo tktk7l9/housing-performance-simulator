@@ -1,5 +1,5 @@
 /**
- * ステップ内のイベントハンドラを発火させて Funcs カバレッジを上げる
+ * Fire event handlers inside the steps to raise Funcs coverage
  */
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
@@ -76,7 +76,7 @@ describe("BuildingStep interactions", () => {
       input: { ...DEFAULT_INPUT, addressPrefecture: "東京都" },
     });
     render(<BuildingStep onNext={() => {}} />);
-    // hint に 住所自動判定 が出る
+    // The hint shows "住所自動判定" (auto-detect from address)
     expect(screen.getAllByText(/住所から自動判定/).length).toBeGreaterThan(0);
   });
 });

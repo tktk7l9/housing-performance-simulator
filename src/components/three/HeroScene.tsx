@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 /**
- * 控えめなワイヤーフレーム住宅 + 床面ドットグリッド。
- * - 画面内のときだけアニメーション、prefers-reduced-motion を尊重。
- * - 透過背景でページの淡いブルーに自然に溶け込む。
+ * Understated wireframe house + floor dot grid.
+ * - Animates only while on screen, respects prefers-reduced-motion.
+ * - Transparent background blends naturally into the page's pale blue.
  */
 export function HeroScene({ className }: { className?: string }) {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -36,7 +36,7 @@ export function HeroScene({ className }: { className?: string }) {
     const accentColor = 0x60a5fa; // accent
     const groundDot = 0xa3b8d9;
 
-    // 本体（直方体ワイヤー）
+    // Body (box wireframe)
     const bodyGeom = new THREE.BoxGeometry(2.2, 1.4, 1.6);
     const bodyEdges = new THREE.EdgesGeometry(bodyGeom);
     const bodyLine = new THREE.LineSegments(
@@ -46,7 +46,7 @@ export function HeroScene({ className }: { className?: string }) {
     bodyLine.position.y = 0.7;
     house.add(bodyLine);
 
-    // 半透明の面（ガラス感）
+    // Semi-transparent faces (glass look)
     const bodyFaceMat = new THREE.MeshBasicMaterial({
       color: 0x6c9bff,
       transparent: true,
@@ -57,7 +57,7 @@ export function HeroScene({ className }: { className?: string }) {
     bodyFace.position.y = 0.7;
     house.add(bodyFace);
 
-    // 屋根（三角プリズム = 押し出し三角形）
+    // Roof (triangular prism = extruded triangle)
     const roofShape = new THREE.Shape();
     roofShape.moveTo(-1.2, 0);
     roofShape.lineTo(1.2, 0);
@@ -80,7 +80,7 @@ export function HeroScene({ className }: { className?: string }) {
     roofFace.position.y = 1.4;
     house.add(roofFace);
 
-    // 太陽光パネル（屋根南斜面に小さく）
+    // Solar panel (small, on the south roof slope)
     const panelGeom = new THREE.PlaneGeometry(0.9, 0.5);
     const panelMat = new THREE.MeshBasicMaterial({ color: 0x1e40af, transparent: true, opacity: 0.55 });
     const panel = new THREE.Mesh(panelGeom, panelMat);
@@ -111,7 +111,7 @@ export function HeroScene({ className }: { className?: string }) {
     grid.position.y = -0.01;
     scene.add(grid);
 
-    // 床の中心ライン (地面感)
+    // Floor center lines (sense of ground)
     const ringGeom = new THREE.RingGeometry(2.6, 2.62, 64);
     const ringMat = new THREE.MeshBasicMaterial({ color: lineColor, transparent: true, opacity: 0.18, side: THREE.DoubleSide });
     const ring = new THREE.Mesh(ringGeom, ringMat);

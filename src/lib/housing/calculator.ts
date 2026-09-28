@@ -1,7 +1,7 @@
-// シナリオ計算オーケストレータ
+// Scenario calculation orchestrator
 //
-// 入力 → (建物熱負荷 + 給湯 + 太陽光 + 蓄電池 + その他家電) → 年間光熱費
-// → 年次積上げ（電気代上昇率・FIT/卒FIT 反映） → 累計コスト・CO2
+// Input -> (building heat load + hot water + solar + battery + other appliances) -> annual utility cost
+// -> yearly accumulation (electricity price rise, FIT/post-FIT applied) -> cumulative cost and CO2
 
 import type {
   HousingInput,
@@ -38,7 +38,7 @@ function baselineIdFor(input: HousingInput): string {
   return input.mode === "renovation" ? RENOVATION_BASELINE_ID : NEW_BUILD_BASELINE_ID;
 }
 
-/** 1シナリオの単発計算 */
+/** One-off calculation of a single scenario */
 function calcOneScenario(input: HousingInput, scenarioId: string, scenarioName: string): ScenarioResult {
   const heat = calcHeatLoad(input);
   const hw = calcHotWater(input);
@@ -46,30 +46,30 @@ function calcOneScenario(input: HousingInput, scenarioId: string, scenarioName: 
   const sc = calcSelfConsumption(input);
   const other = OTHER_KWH_PER_PERSON_YEAR * input.household * (input.hems ? 0.95 : 1.0);
 
-  // 家庭の年間電力消費 (太陽光ない時の総消費)
+  // Annual household electricity consumption (total consumption without solar)
   const totalConsumeKwh = heat.totalEnergyKwh + Math.max(0, hw.electricityKwh) + other;
 
-  // 自家消費は世帯の総消費を上限とし、超過は余剰として売電に回す
-  // （これをしないと「使い切れない発電」が宙に浮き、売電収入が過小計上される）
+  // Self-consumption is capped at total household consumption; the excess is sold as surplus
+  // (otherwise generation that cannot be used is left unaccounted for and feed-in revenue is understated)
   const rawSelfConsume = solar.annualKwh * sc.selfConsumptionRate;
   const selfConsumeKwh = Math.min(rawSelfConsume, totalConsumeKwh);
   const surplusKwh = Math.max(0, solar.annualKwh - selfConsumeKwh);
   const buyKwh = Math.max(0, totalConsumeKwh - selfConsumeKwh);
 
-  // 給湯がエネファーム等で電力相殺（マイナス値）の場合、買電を更に減らす
+  // When hot water offsets electricity (negative value), e.g. with Ene-Farm, reduce purchased power further
   const buyKwhAfterEneFarm = hw.electricityKwh < 0 ? Math.max(0, buyKwh + hw.electricityKwh) : buyKwh;
 
   const initial = calcInitialCost(input);
   const subsidyTotal = totalSubsidyAmount(input, input.appliedSubsidyIds);
   const initialCostNet = Math.max(0, initial.total - subsidyTotal);
 
-  // 1年目 光熱費
+  // Year-1 utility cost
   const electricityCost = buyKwhAfterEneFarm * input.electricityPriceBuy;
   const gasCost = hw.gasM3 * input.gasPrice;
   const sellRevenueY1 = surplusKwh * input.sellPriceFit;
   const firstYearEnergyCost = electricityCost + gasCost - sellRevenueY1;
 
-  // 年次キャッシュフロー
+  // Yearly cash flow
   const riseRate = ELECTRICITY_RISE_RATES[input.electricityRise] / 100;
   const years = Math.max(1, input.livingYears);
   const yearly: YearlyEntry[] = [];
@@ -85,7 +85,7 @@ function calcOneScenario(input: HousingInput, scenarioId: string, scenarioName: 
     yearly.push({ year: y, energyCost: yearCost, cumulative });
   }
 
-  // CO2: 標準シナリオとの差で出すため、ここでは「絶対の年間 CO2」を返し、後で差分計算
+  // CO2: derived as the difference from the standard scenario, so return absolute annual CO2 here and diff later
   const annualCo2 = calcAnnualCo2(buyKwhAfterEneFarm, hw.gasM3);
 
   return {
@@ -110,10 +110,10 @@ function calcOneScenario(input: HousingInput, scenarioId: string, scenarioName: 
   };
 }
 
-/** 複数シナリオを計算し、baseline 比の差分を埋め込む */
+/** Calculate multiple scenarios and embed the differences against baseline */
 export function runSimulation(input: HousingInput, scenarios: Scenario[]): SimulationOutput {
   const baselineId = baselineIdFor(input);
-  // baseline を必ず先頭に組み込む
+  // Always put baseline first
   const hasBaseline = scenarios.some((s) => s.id === baselineId);
   const baselineScenario =
     input.mode === "renovation"
@@ -124,7 +124,7 @@ export function runSimulation(input: HousingInput, scenarios: Scenario[]): Simul
   const calculated = allScenarios.map((s) => calcOneScenario(s.input, s.id, s.name));
   const baseline = calculated.find((r) => r.scenarioId === baselineId)!;
 
-  // baseline の絶対 CO2 (= -annualCo2Reduction として一時格納していた)
+  // Absolute CO2 of baseline (temporarily stored as -annualCo2Reduction)
   const baselineAnnualCo2 = -baseline.annualCo2Reduction;
 
   for (const r of calculated) {
@@ -134,7 +134,7 @@ export function runSimulation(input: HousingInput, scenarios: Scenario[]): Simul
     r.initialCostDelta = r.initialCostNet - baseline.initialCostNet;
   }
 
-  // 投資回収年数: scenario の累計が baseline の累計を下回る最初の年
+  // Payback years: the first year in which the scenario's cumulative total falls below baseline's
   const paybackYears: Record<string, number> = {};
   const baselineYearly = baseline.yearly;
   for (const r of calculated) {
@@ -146,7 +146,7 @@ export function runSimulation(input: HousingInput, scenarios: Scenario[]): Simul
     for (let i = 0; i < r.yearly.length; i++) {
       const diff = r.yearly[i].cumulative - baselineYearly[i].cumulative;
       if (diff <= 0) {
-        // 線形補間で前年との交点を求める
+        // Find the crossing point with the previous year by linear interpolation
         if (i === 0) {
           payback = 0;
         } else {

@@ -1,14 +1,14 @@
-// 感度分析（トルナド図）
+// Sensitivity analysis (tornado chart)
 //
-// ユーザー入力を中心に、6 つの主要パラメータを下端値・上端値に振って
-// 30 年累計コストの差分を計算する。
-// 結果は影響度（|low - high|）の大きい順にソート。
+// Centered on the user's input, swing 6 key parameters to their low and high values
+// and compute the difference in 30-year cumulative cost.
+// Results are sorted by impact (|low - high|), largest first.
 
 import type { ElectricityRiseScenario, HousingInput, ScenarioResult } from "./types";
 import { runSimulation } from "./calculator";
 import { buildRenovationAppliedScenario, buildUserScenario } from "./presets";
 
-/** モードに応じて、感度分析の対象とする「ユーザーシナリオ」を返す */
+/** Return the "user scenario" to analyze for sensitivity, depending on the mode */
 function targetScenario(input: HousingInput) {
   return input.mode === "renovation"
     ? buildRenovationAppliedScenario(input)
@@ -19,23 +19,23 @@ const TARGET_ID_FOR_PICK = (mode: HousingInput["mode"]) =>
   mode === "renovation" ? "renovation-applied" : "user";
 
 export interface SensitivityRow {
-  /** パラメータ識別子 */
+  /** Parameter identifier */
   key: SensitivityKey;
-  /** 表示用ラベル */
+  /** Display label */
   label: string;
-  /** 中心値（人間可読） */
+  /** Center value (human readable) */
   centerLabel: string;
-  /** 下端 / 上端の表示 */
+  /** Display of the low / high ends */
   lowLabel: string;
   highLabel: string;
-  /** 累計コスト（円）— 中心 / 下端 / 上端 */
+  /** Cumulative cost (yen) — center / low / high */
   centerCost: number;
   lowCost: number;
   highCost: number;
-  /** 中心からの差（円）— 表示用 */
+  /** Difference from center (yen) — for display */
   lowDelta: number;
   highDelta: number;
-  /** 影響度（|low - high|）円 */
+  /** Impact (|low - high|), yen */
   impact: number;
 }
 
@@ -50,11 +50,11 @@ export type SensitivityKey =
 interface ParamSpec {
   key: SensitivityKey;
   label: string;
-  /** 中心値の取得 */
+  /** Get the center value */
   center: (i: HousingInput) => { value: number | string; label: string };
-  /** 下端の入力変換 */
+  /** Input transform for the low end */
   low: (i: HousingInput) => { input: HousingInput; label: string };
-  /** 上端の入力変換 */
+  /** Input transform for the high end */
   high: (i: HousingInput) => { input: HousingInput; label: string };
 }
 

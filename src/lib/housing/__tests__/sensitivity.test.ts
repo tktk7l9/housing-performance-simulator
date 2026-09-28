@@ -97,12 +97,12 @@ describe("runSensitivity", () => {
   it("uaValue 下端は 0.15 にクランプ", () => {
     const r = runSensitivity(baseInput({ uaValue: 0.20 }));
     const row = r.find((d) => d.key === "uaValue")!;
-    // 0.20 - 0.15 = 0.05 → クランプで 0.15
+    // 0.20 - 0.15 = 0.05 -> clamped to 0.15
     expect(row.lowLabel).toContain("0.15");
   });
 
   it("electricityPriceBuy: low が単価 5 円にクランプされる極端ケース", () => {
-    const r = runSensitivity(baseInput({ electricityPriceBuy: 6 })); // 0.7*6=4.2 → 5にクランプ
+    const r = runSensitivity(baseInput({ electricityPriceBuy: 6 })); // 0.7*6=4.2 -> clamped to 5
     const row = r.find((d) => d.key === "electricityPrice")!;
     expect(row.lowLabel).toContain("5");
   });

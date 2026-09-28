@@ -1,5 +1,5 @@
-// 窓仕様の代表 U値（W/m²·K）と参考価格レンジ（窓1m²あたり）。
-// 出典: メーカー公開カタログの中央値レンジ、JIS A 4710 ベース。
+// Representative U values (W/m²·K) and reference price ranges (per 1m² of window) for window specs.
+// Source: median ranges from published manufacturer catalogs, based on JIS A 4710.
 
 import type { WindowSpecId } from "../types";
 
@@ -7,7 +7,7 @@ export interface WindowSpecData {
   id: WindowSpecId;
   name: string;
   description: string;
-  /** 窓 U値 W/(m²·K) */
+  /** Window U value W/(m²·K) */
   uValue: number;
 }
 

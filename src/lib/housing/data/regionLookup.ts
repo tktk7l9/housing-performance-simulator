@@ -1,15 +1,15 @@
-// 都道府県・市区町村 → 省エネ基準地域区分（1〜8）のルックアップ
+// Lookup from prefecture/municipality -> energy-saving standard climate region (1-8)
 //
-// 出典: 国土交通省告示第265号「住宅の省エネルギー基準」別表 地域区分
-// （都道府県内で地域区分が分かれる場合は主要市町村を CITY_OVERRIDES に列挙）
+// Source: MLIT Notice No. 265 "住宅の省エネルギー基準" (housing energy-saving standard), appendix listing the regions
+// (when a prefecture spans multiple regions, major municipalities are listed in CITY_OVERRIDES)
 // lastUpdated: 2026-04
 //
-// 注意: 厳密には市町村単位で告示されている。本データは MVP 用の代表値で、
-// 不明な市町村は都道府県のデフォルト（最も人口が多い地域）を使う。
+// Note: strictly, regions are designated per municipality. This data holds representative values for the MVP;
+// unknown municipalities use the prefecture default (the most populous region).
 
 import type { Prefecture, RegionId } from "../types";
 
-/** 都道府県のデフォルト地域区分（県庁所在地ベース） */
+/** Default region per prefecture (based on the prefectural capital) */
 export const PREFECTURE_DEFAULT: Record<Prefecture, RegionId> = {
   北海道: 2, // 札幌
   青森県: 2,
@@ -61,11 +61,11 @@ export const PREFECTURE_DEFAULT: Record<Prefecture, RegionId> = {
 };
 
 /**
- * 主要都市の例外マップ（都道府県のデフォルトと異なる場合のみ列挙）
- * キーは `${都道府県} ${市区町村}` の形式。
+ * Exception map for major cities (listed only when different from the prefecture default)
+ * Keys have the form `${prefecture} ${municipality}`.
  */
 export const CITY_OVERRIDES: Record<string, RegionId> = {
-  // 北海道（広域）
+  // Hokkaido (wide area)
   "北海道 旭川市": 1,
   "北海道 帯広市": 1,
   "北海道 北見市": 1,
@@ -74,7 +74,7 @@ export const CITY_OVERRIDES: Record<string, RegionId> = {
   "北海道 札幌市": 2,
   "北海道 函館市": 3,
   "北海道 室蘭市": 3,
-  // 青森・岩手・福島
+  // Aomori, Iwate, Fukushima
   "青森県 青森市": 2,
   "青森県 八戸市": 3,
   "岩手県 盛岡市": 3,
@@ -83,7 +83,7 @@ export const CITY_OVERRIDES: Record<string, RegionId> = {
   "福島県 郡山市": 4,
   "福島県 福島市": 4,
   "福島県 いわき市": 5,
-  // 関東・甲信越
+  // Kanto, Koshinetsu
   "栃木県 那須塩原市": 4,
   "群馬県 沼田市": 4,
   "新潟県 上越市": 5,
@@ -93,18 +93,18 @@ export const CITY_OVERRIDES: Record<string, RegionId> = {
   "長野県 長野市": 4,
   "長野県 軽井沢町": 2,
   "山梨県 富士吉田市": 4,
-  // 中部・関西
+  // Chubu, Kansai
   "岐阜県 高山市": 3,
   "岐阜県 岐阜市": 6,
   "石川県 金沢市": 5,
   "福井県 福井市": 5,
   "滋賀県 大津市": 6,
-  // 中国・四国・九州
+  // Chugoku, Shikoku, Kyushu
   "鳥取県 米子市": 6,
   "高知県 高知市": 6,
   "宮崎県 宮崎市": 7,
   "宮崎県 高千穂町": 5,
-  // 沖縄
+  // Okinawa
   "沖縄県 那覇市": 8,
 };
 
@@ -122,7 +122,7 @@ export function lookupRegion(prefecture: Prefecture, city?: string): RegionLooku
   return { region: PREFECTURE_DEFAULT[prefecture], matched: "prefecture" };
 }
 
-/** 都道府県毎に CITY_OVERRIDES に列挙された都市名一覧を返す */
+/** Return the list of city names listed in CITY_OVERRIDES for a prefecture */
 export function citiesFor(prefecture: Prefecture): string[] {
   const prefix = `${prefecture} `;
   return Object.keys(CITY_OVERRIDES)

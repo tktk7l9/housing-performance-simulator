@@ -162,7 +162,7 @@ export const useHousingStore = create<HousingStore>()(
             };
           }
           const { region } = lookupRegion(prefecture, city);
-          // 断熱プリセットが UA を地域で持つので、地域変更時に再セット
+          // Insulation presets hold UA per region, so reset it when the region changes
           const preset = s.input.insulationPreset;
           const ua =
             preset !== "custom"
@@ -284,5 +284,5 @@ export const useHousingStore = create<HousingStore>()(
   )
 );
 
-/** 後方互換のため旧名をエクスポート */
+/** Export the old name for backward compatibility */
 export const STEP_IDS = STEP_IDS_NEW_BUILD;

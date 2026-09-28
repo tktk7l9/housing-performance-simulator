@@ -60,7 +60,7 @@ describe("calcSolar", () => {
     const w = calcSolar(baseInput({ solarOrientation: "west" })).annualKwh;
     expect(sw).toBeLessThan(south);
     expect(sw).toBeGreaterThan(w);
-    expect(se).toBe(sw); // 両方 0.96
+    expect(se).toBe(sw); // Both 0.96
   });
 
   it("傾斜 30° が最大付近、0° と 90° は減少", () => {
@@ -117,7 +117,7 @@ describe("calcSelfConsumption", () => {
 
   it("負の蓄電池容量は 0 として扱う", () => {
     const r = calcSelfConsumption(baseInput({ batteryCapacity: -5 }));
-    // batteryUplift(-5) → 0 になるはず。base のみで判定可能
+    // batteryUplift(-5) should be 0. Can be judged from base alone
     expect(r.selfConsumptionRate).toBeGreaterThan(0);
   });
 });
@@ -166,7 +166,7 @@ describe("matchSubsidies / totalSubsidyAmount", () => {
   it("totalSubsidyAmount: 適用 ID の amount を合計", () => {
     const input = baseInput({ insulationPreset: "heat20-g2", solarCapacity: 5 });
     const total = totalSubsidyAmount(input, ["zeh", "kodomo-eco", "long-life", "battery-doe"]);
-    // 全部適用される(G2はzehよりランク上)
+    // All are applied (G2 ranks above zeh)
     expect(total).toBe(550_000 + 800_000 + 1_000_000 + 200_000);
   });
 
@@ -275,17 +275,17 @@ describe("presets: build*Scenario", () => {
   it("custom 断熱プリセット: applyInsulation は input をそのまま返す", () => {
     const input = baseInput({ insulationPreset: "custom", uaValue: 0.33 });
     const s = buildHighPerformanceScenario(input);
-    // applyInsulation(_, 'heat20-g2') が走るので uaValue は g2 値に上書きされる
+    // applyInsulation(_, 'heat20-g2') runs, so uaValue is overwritten with the g2 value
     expect(s.input.uaValue).not.toBe(0.33);
   });
 });
 
 describe("subsidy: 未知 preset の rank フォールバック", () => {
   it("カスタム以外の未知値は ?? 0 で扱われる", () => {
-    // INSULATION_RANK にない preset を渡しても crash しない
+    // Passing a preset not in INSULATION_RANK does not crash
     const r = matchSubsidies({
       ...baseInput(),
-      // @ts-expect-error 故意に invalid 値で内部 rank fallback を発火
+      // @ts-expect-error deliberately pass an invalid value to trigger the internal rank fallback
       insulationPreset: "unknown-preset",
     });
     expect(Array.isArray(r)).toBe(true);

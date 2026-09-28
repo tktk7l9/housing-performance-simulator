@@ -1,7 +1,7 @@
-// 地域区分 1〜8: 省エネ基準告示の区分に基づく
-// HDD18 (暖房デグリーデー 基準温度18℃) / CDD24 (冷房デグリーデー 基準温度24℃) は
-// 各地域の代表都市の平年値を参考とした概算値（℃·日）。
-// 出典: 省エネ基準告示・気象庁平年値ベースの代表値。実値は微地形・都市差で変動する。
+// Regions 1-8: based on the classification in the energy-saving standard notice
+// HDD18 (heating degree days, base 18℃) / CDD24 (cooling degree days, base 24℃) are
+// rough values (℃·day) based on normal-year values of each region's representative city.
+// Source: representative values based on the energy-saving standard notice and JMA normals. Actual values vary with local terrain and city.
 
 import type { RegionId } from "../types";
 
@@ -9,9 +9,9 @@ export interface RegionData {
   id: RegionId;
   name: string;
   representative: string;
-  /** 暖房デグリーデー (℃·日) */
+  /** Heating degree days (℃·day) */
   hdd18: number;
-  /** 冷房デグリーデー (℃·日) */
+  /** Cooling degree days (℃·day) */
   cdd24: number;
 }
 

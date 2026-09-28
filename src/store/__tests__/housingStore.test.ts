@@ -81,7 +81,7 @@ describe("housingStore", () => {
       expect(s.input.addressPrefecture).toBe("北海道");
       expect(s.input.addressCity).toBe("旭川市");
       expect(s.input.region).toBe(1);
-      // energy-saving プリセットの 1 地域 UA は 0.46
+      // The region-1 UA of the energy-saving preset is 0.46
       expect(s.input.uaValue).toBe(0.46);
     });
 
@@ -137,7 +137,7 @@ describe("housingStore", () => {
 
     it("内部 throw 時は isCalculating だけ false に (renovation mode + renovation 未設定で crash)", () => {
       useHousingStore.getState().setMode("renovation");
-      // renovation 未設定状態で計算 → 内部で baseline 不在 → throw
+      // Calculate with renovation unset -> no baseline internally -> throw
       useHousingStore.getState().calculate();
       expect(useHousingStore.getState().isCalculating).toBe(false);
     });
@@ -162,7 +162,7 @@ describe("housingStore", () => {
       useHousingStore.getState().hydrateFromInput({ ...DEFAULT_INPUT, floorArea: 150 });
       const s = useHousingStore.getState();
       expect(s.input.floorArea).toBe(150);
-      // currentStep が最終ステップに
+      // currentStep becomes the last step
       expect(s.currentStep).toBe(STEP_IDS_NEW_BUILD.length - 1);
     });
     it("renovation モードの入力でも適切に展開", () => {
@@ -194,7 +194,7 @@ describe("housingStore", () => {
     it("saveCurrent: 上限20件で古いものは切り捨て", () => {
       for (let i = 0; i < 25; i++) useHousingStore.getState().saveCurrent(`s${i}`);
       expect(useHousingStore.getState().savedSimulations).toHaveLength(20);
-      // 最新が先頭
+      // Newest first
       expect(useHousingStore.getState().savedSimulations[0].name).toBe("s24");
     });
 

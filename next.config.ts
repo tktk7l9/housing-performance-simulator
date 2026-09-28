@@ -1,12 +1,12 @@
 import type { NextConfig } from "next";
 
 // Content-Security-Policy:
-//   - default-src 'self' で全リソースを自オリジン限定
-//   - script-src に 'unsafe-inline' / 'unsafe-eval' は Next.js（HMR・RSC）と
-//     Recharts 等のクライアントライブラリで必要
-//   - style-src 'unsafe-inline' は Tailwind v4 / Radix Portal が必要
-//   - img-src は data: と blob: を許可（PDF サムネ・OG プレビュー用）
-//   - frame-ancestors 'none' でクリックジャック防止（X-Frame-Options より厳格）
+//   - default-src 'self' restricts all resources to the same origin
+//   - script-src needs 'unsafe-inline' / 'unsafe-eval' for Next.js (HMR, RSC) and
+//     client libraries such as Recharts
+//   - style-src 'unsafe-inline' is required by Tailwind v4 / Radix Portal
+//   - img-src allows data: and blob: (for PDF thumbnails and OG previews)
+//   - frame-ancestors 'none' prevents clickjacking (stricter than X-Frame-Options)
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com",

@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-// 2026-08-16 に Vercel から Cloudflare Workers へ移行した。Vercel 側は Fair Use
-// 超過でアカウントごと 402 になっており、旧 URL を canonical に残すと死んだ
-// ページを正規扱いさせてしまう。
-// NEXT_PUBLIC_SITE_URL があればそちらが優先（ビルド時にインライン化される）。
+// Migrated from Vercel to Cloudflare Workers on 2026-08-16. The whole Vercel account
+// returns 402 after exceeding Fair Use, so keeping the old URL as canonical would make
+// a dead page the canonical one.
+// NEXT_PUBLIC_SITE_URL takes precedence when set (inlined at build time).
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
   "https://housing-performance-simulator.saitotakuya0719.workers.dev";
@@ -108,9 +108,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground">
         {children}
-        {/* Cloudflare Web Analytics（トークンは公開前提の識別子。秘密ではない） */}
+        {/* Cloudflare Web Analytics (the token is an identifier meant to be public, not a secret) */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts --
-            type="module" のスクリプトは仕様上 defer されるため、パーサーを止めない */}
+            type="module" scripts are deferred by spec, so this does not block the parser */}
         <script
           type="module"
           src="https://static.cloudflareinsights.com/beacon.min.js"

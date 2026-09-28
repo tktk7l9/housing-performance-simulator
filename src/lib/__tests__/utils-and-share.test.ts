@@ -15,7 +15,7 @@ describe("utils", () => {
     expect(formatYen(1234.7)).toBe("1,235円");
   });
   it("formatManYen: 千円単位を万円・小数1桁に丸める", () => {
-    // 1234567円 → 123.5 万円
+    // 1,234,567 yen -> 123.5 man-yen (万円)
     expect(formatManYen(1234567)).toBe("123.5万円");
   });
   it("formatKwh", () => {
@@ -81,7 +81,7 @@ describe("share/encoder", () => {
   });
 
   it("decodeInput: JSON.parse できない文字列は catch で null", () => {
-    // LZString は decompress に失敗 → null → 早期 return null
+    // LZString fails to decompress -> null -> early return null
     expect(decodeInput("ZZZ")).toBeNull();
   });
 });

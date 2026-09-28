@@ -1,16 +1,16 @@
-// 設備系の効率値・代表初期費用。
-// メーカー名は出さず、機器カテゴリ + 効率値で扱う。
+// Equipment efficiency values and representative initial costs.
+// No manufacturer names; handled by equipment category + efficiency value.
 
 import type { HeatingId, WaterHeaterId } from "../types";
 
 export interface WaterHeaterData {
   id: WaterHeaterId;
   name: string;
-  /** 給湯機器の総合効率（COP 相当・1次エネ換算）— ガスは熱効率 */
+  /** Overall efficiency of the water heater (COP equivalent, primary energy basis) — thermal efficiency for gas */
   efficiency: number;
-  /** エネルギー種別 */
+  /** Energy type */
   energy: "electricity" | "gas" | "hybrid";
-  /** 代表初期費用 円 */
+  /** Representative initial cost, yen */
   initialCost: number;
 }
 
@@ -41,11 +41,11 @@ export const WATER_HEATERS: Record<WaterHeaterId, WaterHeaterData> = {
 export interface HeatingData {
   id: HeatingId;
   name: string;
-  /** 暖房 COP */
+  /** Heating COP */
   copHeating: number;
-  /** 冷房 COP */
+  /** Cooling COP */
   copCooling: number;
-  /** 代表初期費用 円（複数室分） */
+  /** Representative initial cost, yen (for multiple rooms) */
   initialCost: number;
 }
 
@@ -73,15 +73,15 @@ export const HEATING_OPTIONS: Record<HeatingId, HeatingData> = {
   },
 };
 
-/** 太陽光 円/kW（架台・パワコン・施工込みの一般的なレンジ中央値） */
+/** Solar, yen/kW (midpoint of the typical range including mounts, power conditioner and installation) */
 export const SOLAR_COST_PER_KW = 240_000;
-/** 蓄電池 円/kWh */
+/** Battery, yen/kWh */
 export const BATTERY_COST_PER_KWH = 180_000;
-/** HEMS 一式 円 */
+/** HEMS full set, yen */
 export const HEMS_COST = 200_000;
 
-/** その他家電 想定 kWh/人/年 */
+/** Other appliances, assumed kWh/person/year */
 export const OTHER_KWH_PER_PERSON_YEAR = 1200;
 
-/** 太陽光・蓄電池の交換タイミングと費用は本MVPでは初期費用のみ計上する。
- *  期間中の交換費用は AssumptionsPanel で「未計上」と開示する。 */
+/** For solar and battery replacement timing and cost, this MVP counts only the initial cost.
+ *  Replacement costs during the period are disclosed as "not included" in AssumptionsPanel. */

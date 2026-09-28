@@ -1,14 +1,14 @@
-// 保存・共有データのスキーマバージョン管理 + 実行時バリデーション
+// Schema versioning + runtime validation for saved and shared data
 //
-// 共有 URL や localStorage 由来の入力は信用しない。`sanitizeInput` で
-//   - 数値を安全な範囲にクランプ（DoS 対策: livingYears の上限など）
-//   - 列挙型を許可集合とマッチ（外れたら既定値）
-//   - 不足フィールドを既定値で補完
-// したうえで `HousingInput` を返す。
+// Input from shared URLs or localStorage is not trusted. `sanitizeInput`
+//   - clamps numbers to safe ranges (DoS protection: e.g. an upper bound on livingYears)
+//   - matches enums against allowed sets (default value if not matched)
+//   - fills missing fields with default values
+// and then returns a `HousingInput`.
 //
-// バージョン履歴:
-//   v1 … 初期構築（新築のみ）
-//   v2 … mode (new-build|renovation) と renovation 入力を追加
+// Version history:
+//   v1 … initial build (new build only)
+//   v2 … added mode (new-build|renovation) and renovation input
 
 import type {
   AgeBracket,
@@ -28,15 +28,15 @@ import type {
 
 export const CURRENT_SCHEMA_VERSION = 2;
 
-/** 保存・共有時のエンベロープ */
+/** Envelope used when saving and sharing */
 export interface InputEnvelope {
   schemaVersion: number;
   input: HousingInput;
 }
 
-// ── 既定値（sanitize の fallback） ─────────────────────────────────
-//   store の DEFAULT_INPUT と循環依存になるためここで小規模なフォールバック値を持つ。
-//   厳密値は呼び出し側のフォーム既定値で上書きされる。
+// ── Default values (sanitize fallback) ─────────────────────────────────
+//   Importing the store's DEFAULT_INPUT would create a circular dependency, so small fallback values live here.
+//   Exact values are overwritten by the caller's form defaults.
 const FALLBACK = {
   mode: "new-build" as SimulationMode,
   floorArea: 120,
@@ -62,7 +62,7 @@ const FALLBACK = {
   electricityRise: "moderate" as ElectricityRiseScenario,
 };
 
-// ── 列挙の許可集合 ─────────────────────────────────────────────────
+// ── Allowed enum sets ─────────────────────────────────────────────────
 const MODES: SimulationMode[] = ["new-build", "renovation"];
 const PRESENCES = ["evening-only", "all-day"] as const;
 const INSULATION_PRESETS: InsulationPresetId[] = [
@@ -115,7 +115,7 @@ const PREFECTURE_LIST: Prefecture[] = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ];
 
-// ── プリミティブ sanitizer ─────────────────────────────────────────
+// ── Primitive sanitizers ─────────────────────────────────────────
 function num(v: unknown, def: number, min: number, max: number): number {
   const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
   if (!Number.isFinite(n)) return def;
@@ -142,14 +142,14 @@ function trimStr(v: unknown, max = 200): string | undefined {
   return t.length > max ? t.slice(0, max) : t;
 }
 
-// ── renovation の sanitize ────────────────────────────────────────
+// ── renovation sanitize ────────────────────────────────────────
 function sanitizeRenovation(raw: unknown): RenovationInput | undefined {
   if (!raw || typeof raw !== "object") return undefined;
   const r = raw as Record<string, unknown>;
   const itemsRaw = Array.isArray(r.items) ? r.items : [];
   const items = itemsRaw
     .filter((x): x is RenovationItemId => RENOVATION_ITEM_IDS.includes(x as RenovationItemId))
-    .slice(0, RENOVATION_ITEM_IDS.length); // 最大本数で打切り
+    .slice(0, RENOVATION_ITEM_IDS.length); // Truncate at the maximum count
   return {
     ageBracket: pickEnum(r.ageBracket, AGE_BRACKETS, "1980-1999"),
     remainingYears: int(r.remainingYears, 20, 1, 60),
@@ -162,7 +162,7 @@ function sanitizeRenovation(raw: unknown): RenovationInput | undefined {
   };
 }
 
-// ── HousingInput の sanitize ──────────────────────────────────────
+// ── HousingInput sanitize ──────────────────────────────────────
 export function sanitizeInput(raw: unknown): HousingInput {
   const r =
     raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
@@ -214,21 +214,21 @@ function pickEnumOrUndef<T extends string>(v: unknown, allowed: readonly T[]): T
 }
 
 /**
- * 旧バージョンの入力を現行スキーマへ migrate。
- * 実行時バリデーションは sanitizeInput が担う。
+ * Migrate input from an older version to the current schema.
+ * Runtime validation is handled by sanitizeInput.
  */
 export function migrateInput(raw: Partial<HousingInput> & { schemaVersion?: number }): HousingInput {
   return sanitizeInput(raw);
 }
 
-/** envelope を作成（保存・共有用） */
+/** Create an envelope (for saving and sharing) */
 export function makeEnvelope(input: HousingInput): InputEnvelope {
   return { schemaVersion: CURRENT_SCHEMA_VERSION, input };
 }
 
 /**
- * envelope（または素の HousingInput）から HousingInput を取り出す。
- * 信用できない入力（共有URL, localStorage）はここを必ず通る。
+ * Extract a HousingInput from an envelope (or a bare HousingInput).
+ * Untrusted input (shared URL, localStorage) always goes through here.
  */
 export function unwrapEnvelope(value: unknown): HousingInput | null {
   if (!value || typeof value !== "object") return null;
@@ -236,6 +236,6 @@ export function unwrapEnvelope(value: unknown): HousingInput | null {
   if ("schemaVersion" in v && "input" in v && v.input && typeof v.input === "object") {
     return sanitizeInput(v.input);
   }
-  // 素のデータ（schemaVersion 無し → v1 として扱う）
+  // Bare data (no schemaVersion -> treated as v1)
   return sanitizeInput(v);
 }

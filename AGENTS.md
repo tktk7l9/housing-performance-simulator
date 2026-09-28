@@ -1,18 +1,18 @@
-# 住宅性能シミュレーター
+# Housing Performance Simulator
 
-## プロダクトの基本姿勢
+## Product stance
 
-施主が「30年でどちらが得か」を**中立的な数字**で意思決定するためのツール。
+A tool that lets home buyers decide "which option pays off over 30 years" with **neutral numbers**.
 
-- 営業トーク・推奨表現を入れない（「おすすめ」「最適」などの誘導語禁止）
-- メーカー名・商品名は出さない（機器カテゴリと効率値のみで扱う）
-- 計算の前提値・係数は必ず `src/lib/housing/data/*.ts` に集約し、UI（AssumptionsPanel）から開示できる状態を保つ
-- 補助金マスタは `lastUpdated` フィールド必須
+- No sales pitch or recommendation language (steering words such as 「おすすめ」 (recommended) or 「最適」 (optimal) are forbidden)
+- Do not show manufacturer or product names (handle equipment only by category and efficiency value)
+- Always keep calculation assumptions and coefficients in `src/lib/housing/data/*.ts`, and keep them disclosable from the UI (AssumptionsPanel)
+- The subsidy master must have a `lastUpdated` field
 
-## Next.js 16 注意事項
+## Next.js 16 notes
 
-このリポジトリは Next.js 16+ を使用している。学習データに含まれる Next.js とは API・規約・ファイル構成が異なる場合がある。新しい API を書く前に必ず `node_modules/next/dist/docs/` の該当ガイドを参照すること。Deprecation 警告を見たら無視せず修正する。
+This repository uses Next.js 16+. Its APIs, conventions and file layout may differ from the Next.js in your training data. Before writing new API code, always consult the relevant guide in `node_modules/next/dist/docs/`. Do not ignore deprecation warnings; fix them.
 
-## 計算の透明性
+## Calculation transparency
 
-`heatLoad / hotWater / solar / battery / cost / subsidy / co2` の各モジュールは純関数として実装し、引数と返り値の単位をコメントで明記する。出典が公的資料（省エネ基準告示、NEDO 日射量データ等）にある係数は、データファイル冒頭に出典を記載する。
+Implement each of the `heatLoad / hotWater / solar / battery / cost / subsidy / co2` modules as pure functions, and state the units of arguments and return values in comments. For coefficients that come from public sources (the energy-saving standard notice (省エネ基準告示), NEDO irradiance data, etc.), cite the source at the top of the data file.
