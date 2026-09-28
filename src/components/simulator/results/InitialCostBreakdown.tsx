@@ -4,7 +4,12 @@ import { calcInitialCost } from "@/lib/housing/cost";
 import { formatManYen } from "@/lib/utils";
 import type { SimulationOutput } from "@/lib/housing/types";
 
+const ROW_KEYS = ["insulation", "renovation", "solar", "battery", "waterHeater", "heating", "hems"] as const;
+
 export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
+  const breakdowns = output.scenarios.map((s) => calcInitialCost(findScenarioInput(output, s.scenarioId)));
+  // SHIG 1: drop rows that are zero for every scenario (e.g. renovation work in new-build mode)
+  const rows = ROW_KEYS.filter((key) => breakdowns.some((b) => b[key] > 0));
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -17,15 +22,11 @@ export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
           </tr>
         </thead>
         <tbody>
-          {(["insulation", "renovation", "solar", "battery", "waterHeater", "heating", "hems"] as const).map((key) => (
+          {rows.map((key) => (
             <tr key={key} className="border-b last:border-b-0">
               <td className="py-2 pr-4 text-muted-foreground">{LABELS[key]}</td>
-              {output.scenarios.map((s) => {
-                const breakdown = calcInitialCost(
-                  s.scenarioId === output.baselineId
-                    ? findScenarioInput(output, output.baselineId)
-                    : findScenarioInput(output, s.scenarioId)
-                );
+              {output.scenarios.map((s, i) => {
+                const breakdown = breakdowns[i];
                 return (
                   <td key={s.scenarioId} className="py-2 px-2 text-right font-mono">
                     {breakdown[key] > 0 ? formatManYen(breakdown[key]) : "—"}

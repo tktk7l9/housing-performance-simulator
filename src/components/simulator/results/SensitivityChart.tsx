@@ -6,6 +6,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -14,6 +15,7 @@ import {
 } from "recharts";
 import { runSensitivity } from "@/lib/housing/sensitivity";
 import type { HousingInput } from "@/lib/housing/types";
+import { WrappedTick, signedManYen } from "./chartLabels";
 
 const COLOR_GOOD = "var(--chart-2)"; // Direction where the cumulative total goes down = gain
 const COLOR_BAD = "var(--chart-5)"; // Direction where the cumulative total goes up = loss
@@ -41,14 +43,14 @@ export function SensitivityChart({ input }: { input: HousingInput }) {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-muted-foreground">
-        基準（あなたの仕様）からの 30 年累計コスト変化（万円）。左に伸びる = 安くなる方向、右 = 高くなる方向。影響度の大きい順にソート。
+        基準（あなたの仕様）からの {input.livingYears} 年累計コスト変化（万円）。左に伸びる = 安くなる方向、右 = 高くなる方向。影響度の大きい順にソート。
       </p>
       <div className="h-[320px] w-full">
         <ResponsiveContainer>
           <BarChart
             data={data}
             layout="vertical"
-            margin={{ top: 10, right: 24, bottom: 10, left: 100 }}
+            margin={{ top: 10, right: 40, bottom: 10, left: 8 }}
             barCategoryGap={12}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.90 0.013 245)" />
@@ -58,7 +60,7 @@ export function SensitivityChart({ input }: { input: HousingInput }) {
               tickFormatter={(v) => `${v > 0 ? "+" : ""}${v}`}
               fontSize={11}
             />
-            <YAxis type="category" dataKey="label" width={96} fontSize={11} />
+            <YAxis type="category" dataKey="label" width={76} interval={0} tick={<WrappedTick maxChars={6} anchor="end" />} />
             <ReferenceLine x={0} stroke="oklch(0.50 0.16 250)" strokeWidth={1.5} />
             <Tooltip
               cursor={{ fill: "oklch(0.96 0.012 245)" }}
@@ -76,11 +78,14 @@ export function SensitivityChart({ input }: { input: HousingInput }) {
               {data.map((d, i) => (
                 <Cell key={`l-${i}`} fill={d.lowDelta < 0 ? COLOR_GOOD : COLOR_BAD} />
               ))}
+              {/* SHIG 96: signed values in text so the direction does not rely on colour */}
+              <LabelList dataKey="lowDelta" position="left" fontSize={10} formatter={(v) => signedManYen(Number(v))} />
             </Bar>
             <Bar dataKey="highDelta">
               {data.map((d, i) => (
                 <Cell key={`h-${i}`} fill={d.highDelta < 0 ? COLOR_GOOD : COLOR_BAD} />
               ))}
+              <LabelList dataKey="highDelta" position="right" fontSize={10} formatter={(v) => signedManYen(Number(v))} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
