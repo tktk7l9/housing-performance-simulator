@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { encodeInput } from "@/lib/share/encoder";
 import type { HousingInput } from "@/lib/housing/types";
 
-export function ShareUrlButton({ input }: { input: HousingInput }) {
+export function ShareUrlButton({ input, className }: { input: HousingInput; className?: string }) {
   const [copied, setCopied] = useState(false);
 
   const onShare = async () => {
@@ -22,7 +22,7 @@ export function ShareUrlButton({ input }: { input: HousingInput }) {
   };
 
   return (
-    <Button variant="outline" onClick={onShare}>
+    <Button variant="outline" onClick={onShare} className={className}>
       {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
       {copied ? "コピーしました" : "共有URLをコピー"}
     </Button>

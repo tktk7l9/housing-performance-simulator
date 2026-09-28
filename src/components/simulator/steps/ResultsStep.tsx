@@ -16,6 +16,9 @@ import { SaveDialog } from "../SaveDialog";
 import { SensitivityChart } from "../results/SensitivityChart";
 import { EvaluationCard } from "../results/EvaluationCard";
 
+const ACTION_CLASS =
+  "h-auto min-h-11 whitespace-normal px-2 text-xs leading-tight sm:h-10 sm:min-h-0 sm:whitespace-nowrap sm:px-4 sm:text-sm";
+
 export function ResultsStep({ onBack }: { onBack: () => void }) {
   const result = useHousingStore((s) => s.result);
   const input = useHousingStore((s) => s.input);
@@ -46,12 +49,13 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
             {input.livingYears}年間の累計コストでシナリオを比較。
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={() => setSaveOpen(true)}>
+        {/* SHIG 67: secondary actions stay on one row on phones so the answer is not pushed down */}
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+          <Button variant="outline" onClick={() => setSaveOpen(true)} className={ACTION_CLASS}>
             <Save className="h-4 w-4" /> 保存
           </Button>
-          <ShareUrlButton input={input} />
-          <PdfExportButton output={result} />
+          <ShareUrlButton input={input} className={ACTION_CLASS} />
+          <PdfExportButton output={result} className={ACTION_CLASS} />
         </div>
       </header>
 

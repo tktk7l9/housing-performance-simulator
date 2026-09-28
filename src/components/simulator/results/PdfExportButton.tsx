@@ -5,7 +5,7 @@ import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SimulationOutput } from "@/lib/housing/types";
 
-export function PdfExportButton({ output }: { output: SimulationOutput }) {
+export function PdfExportButton({ output, className }: { output: SimulationOutput; className?: string }) {
   const [busy, setBusy] = useState(false);
 
   const onExport = async () => {
@@ -28,7 +28,7 @@ export function PdfExportButton({ output }: { output: SimulationOutput }) {
   };
 
   return (
-    <Button variant="outline" onClick={onExport} disabled={busy}>
+    <Button variant="outline" onClick={onExport} disabled={busy} className={className}>
       {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
       PDF を保存
     </Button>

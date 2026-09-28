@@ -50,7 +50,7 @@ beforeEach(() => {
 describe("SimulatorApp", () => {
   it("currentStep=0: BuildingStep を表示", () => {
     render(<SimulatorApp />);
-    expect(screen.getByText("建物条件")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "建物条件" })).toBeTruthy();
   });
 
   it("setStep(1): PerformanceStep へ", () => {
@@ -86,12 +86,8 @@ describe("TrailSidebar", () => {
 
   it("クリックで currentStep が変わる", () => {
     render(<TrailSidebar />);
-    const buttons = screen.getAllByRole("button");
-    if (buttons.length > 1) {
-      fireEvent.click(buttons[1]);
-      // The step changes
-      expect(useHousingStore.getState().currentStep).not.toBe(0);
-    }
+    fireEvent.click(screen.getByRole("button", { name: /2\. 住宅性能/ }));
+    expect(useHousingStore.getState().currentStep).toBe(1);
   });
 
   it("renovation モードでも描画", () => {
