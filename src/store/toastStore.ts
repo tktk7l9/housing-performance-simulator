@@ -10,6 +10,12 @@ export interface Toast {
   tone: "info" | "error";
   actionLabel?: string;
   onAction?: () => void;
+  /**
+   * Move keyboard focus to the action button when the toast appears. Use it when the
+   * element that triggered the toast has just been removed (e.g. a delete button), so
+   * keyboard users can reach undo instead of being dropped at the top of the page.
+   */
+  focusAction?: boolean;
 }
 
 interface ToastStore {

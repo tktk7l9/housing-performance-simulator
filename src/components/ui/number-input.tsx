@@ -60,10 +60,24 @@ export function NumberInput({
   const focused = React.useRef(false);
   const messageId = React.useId();
 
-  // Follow external changes (presets, restore, undo) while the user is not editing
+  // The last value this field committed itself; anything else came from outside
+  const committed = React.useRef(value);
+
+  // Follow external changes (presets, restore, undo) while the user is not editing.
+  // A message about an earlier correction no longer applies to a value set elsewhere.
   React.useEffect(() => {
-    if (!focused.current) setDraft(String(value));
+    if (focused.current) return;
+    setDraft(String(value));
+    if (value !== committed.current) {
+      committed.current = value;
+      setMessage(null);
+    }
   }, [value]);
+
+  const commit = (n: number) => {
+    committed.current = n;
+    onValueChange(n);
+  };
 
   const round = (n: number) => (integer ? Math.round(n) : n);
   const inRange = (n: number) => (min === undefined || n >= min) && (max === undefined || n <= max);
@@ -74,7 +88,7 @@ export function NumberInput({
     const n = parseNumeric(raw);
     if (n !== null && inRange(round(n))) {
       setMessage(null);
-      onValueChange(round(n));
+      commit(round(n));
     }
   };
 
@@ -92,7 +106,7 @@ export function NumberInput({
         const range = `${min ?? ""}〜${max ?? ""}${unit}`;
         setMessage(`${range}で入力してください。${clamped}にしました。`);
       }
-      if (clamped !== value) onValueChange(clamped);
+      if (clamped !== value) commit(clamped);
       setDraft(String(clamped));
     }
     onBlur?.(e);

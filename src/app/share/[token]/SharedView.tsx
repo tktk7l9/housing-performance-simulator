@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { decodeInput } from "@/lib/share/encoder";
-import { useHousingStore, DEFAULT_INPUT } from "@/store/housingStore";
+import { useHousingStore, DEFAULT_INPUT, SAVED_LIMIT } from "@/store/housingStore";
 import { useToastStore } from "@/store/toastStore";
 
 const BACKUP_NAME = "共有リンクを開く前の入力";
@@ -25,18 +25,32 @@ export function SharedView({ token }: { token: string }) {
       router.replace("/simulator");
       return;
     }
-    // SHIG 38 / 54: keep the receiver's own input before overwriting it, and offer undo
+    // SHIG 38 / 54: keep the receiver's own input before overwriting it, and offer undo.
+    // Undo restores an in-memory snapshot, so it works even when the saved list is full.
     const store = useHousingStore.getState();
     const current = JSON.stringify(store.input);
     const touched = current !== JSON.stringify(DEFAULT_INPUT) && current !== JSON.stringify(input);
-    const backup = touched ? store.saveCurrent(BACKUP_NAME) : undefined;
+    const snapshot = touched
+      ? {
+          input: store.input,
+          selectedScenarioIds: [...store.selectedScenarioIds],
+          currentStep: store.currentStep,
+          visitedSteps: new Set(store.visitedSteps),
+        }
+      : undefined;
+    // Only keep a durable copy when there is room: saveCurrent drops the oldest entry
+    // at the limit, and a backup must never cost the user another saved simulation.
+    const backup =
+      touched && store.savedSimulations.length < SAVED_LIMIT ? store.saveCurrent(BACKUP_NAME) : undefined;
     hydrate(input);
     calculate();
-    if (backup) {
+    if (snapshot) {
       showToast({
-        message: `共有リンクの入力を読み込みました。それまでの入力は「保存済み」に「${BACKUP_NAME}」として残しています。`,
+        message: backup
+          ? `共有リンクの入力を読み込みました。それまでの入力は「保存済み」に「${BACKUP_NAME}」として残しています。`
+          : "共有リンクの入力を読み込みました。それまでの入力に戻すには「元に戻す」を押してください。",
         actionLabel: "元に戻す",
-        onAction: () => useHousingStore.getState().loadSaved(backup.id),
+        onAction: () => useHousingStore.setState({ ...snapshot, result: null }),
       });
     }
     router.replace("/simulator");

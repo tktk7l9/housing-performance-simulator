@@ -23,6 +23,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
   const result = useHousingStore((s) => s.result);
   const input = useHousingStore((s) => s.input);
   const calculate = useHousingStore((s) => s.calculate);
+  const calculateFailed = useHousingStore((s) => s.calculateFailed);
   const [saveOpen, setSaveOpen] = useState(false);
 
   // SHIG 29: calculating is the only possible action here, so do it automatically
@@ -30,6 +31,24 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     if (!result) calculate();
   }, [result, calculate]);
+
+  if (!result && calculateFailed) {
+    // SHIG 55: say what went wrong and what to do next instead of spinning forever
+    return (
+      <section className="flex w-full flex-col gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h2>
+        <p role="alert" className="text-sm text-destructive">
+          計算できませんでした。入力値を見直してから、もう一度お試しください。
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={calculate}>もう一度計算する</Button>
+          <Button variant="outline" onClick={onBack}>
+            入力に戻る
+          </Button>
+        </div>
+      </section>
+    );
+  }
 
   if (!result) {
     return (
@@ -123,7 +142,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={onBack}
-          className="text-sm text-muted-foreground hover:underline"
+          className="inline-flex min-h-11 items-center text-sm text-muted-foreground hover:underline"
         >
           ← 入力を変更する
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToastStore, type Toast } from "@/store/toastStore";
@@ -25,14 +25,29 @@ export function ToastHost() {
 
 function ToastItem({ toast }: { toast: Toast }) {
   const dismiss = useToastStore((s) => s.dismiss);
+  const actionRef = useRef<HTMLButtonElement>(null);
+  // Hold the toast open while it is hovered or holds focus, so reading it or
+  // reaching its button never races the timer (WCAG 2.2.1).
+  const [held, setHeld] = useState(false);
 
   useEffect(() => {
+    if (held) return;
     const timer = setTimeout(() => dismiss(toast.id), TOAST_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [toast.id, dismiss]);
+  }, [toast.id, dismiss, held]);
+
+  useEffect(() => {
+    if (toast.focusAction) actionRef.current?.focus();
+  }, [toast.focusAction]);
 
   return (
     <div
+      onMouseEnter={() => setHeld(true)}
+      onMouseLeave={() => setHeld(false)}
+      onFocus={() => setHeld(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHeld(false);
+      }}
       className={cn(
         "pointer-events-auto flex w-full max-w-md items-center gap-2 rounded-lg border bg-card py-1 pl-4 pr-1 text-sm shadow-lg",
         toast.tone === "error" && "border-destructive"
@@ -41,6 +56,7 @@ function ToastItem({ toast }: { toast: Toast }) {
       <p className="flex-1 py-2 leading-snug">{toast.message}</p>
       {toast.actionLabel && toast.onAction && (
         <button
+          ref={actionRef}
           type="button"
           onClick={() => {
             toast.onAction?.();

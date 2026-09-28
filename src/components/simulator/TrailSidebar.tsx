@@ -114,7 +114,7 @@ export function TrailSidebar() {
         <button
           type="button"
           onClick={() => setSavedOpen((v) => !v)}
-          className="w-full flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted text-sm"
+          className="w-full flex min-h-11 items-center justify-between rounded-md px-2 hover:bg-muted text-sm"
           aria-expanded={savedOpen}
         >
           <span className="flex items-center gap-2">

@@ -126,6 +126,33 @@ describe("NumberInput", () => {
     expect(input.value).toBe("7");
   });
 
+  it("keeps its own correction message but drops it when the value is replaced from outside", () => {
+    function Outer() {
+      const [v, setV] = useState(120);
+      return (
+        <>
+          <NumberInput aria-label="area" value={v} min={30} max={500} unit="㎡" onValueChange={setV} />
+          <button type="button" onClick={() => setV(80)}>
+            restore
+          </button>
+        </>
+      );
+    }
+    render(<Outer />);
+    const input = screen.getByLabelText("area") as HTMLInputElement;
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "900" } });
+    fireEvent.blur(input);
+    // The clamp commits 500 and the explanation survives that re-render
+    expect(input.value).toBe("500");
+    expect(screen.getByText("30〜500㎡で入力してください。500にしました。")).toBeTruthy();
+    // A restore / undo elsewhere sets a new value: the old explanation must go
+    fireEvent.click(screen.getByRole("button", { name: "restore" }));
+    expect(input.value).toBe("80");
+    expect(screen.queryByText(/で入力してください/)).toBeNull();
+    expect(input.getAttribute("aria-invalid")).toBeNull();
+  });
+
   it("without bounds accepts any number and uses the decimal keyboard", () => {
     const spy = vi.fn();
     render(<NumberInput aria-label="y" value={1} onValueChange={spy} />);

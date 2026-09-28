@@ -13,13 +13,16 @@ export function SavedList() {
   const showToast = useToastStore((s) => s.show);
 
   // SHIG 57 / 54: delete right away and offer undo instead of a confirm dialog
-  const onDelete = (id: string, name: string) => {
+  const onDelete = (id: string, name: string, trigger: HTMLElement) => {
+    // The button disappears with its row; hand focus to undo so keyboard users keep their place
+    const hadFocus = document.activeElement === trigger;
     const removed = deleteSaved(id);
     if (!removed) return;
     showToast({
       message: `「${name}」を削除しました`,
       actionLabel: "元に戻す",
       onAction: () => restoreSaved(removed.entry, removed.index),
+      focusAction: hadFocus,
     });
   };
 
@@ -67,7 +70,7 @@ export function SavedList() {
             </button>
             <button
               type="button"
-              onClick={() => onDelete(s.id, s.name)}
+              onClick={(e) => onDelete(s.id, s.name, e.currentTarget)}
               aria-label={`「${s.name}」を削除`}
               className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             >

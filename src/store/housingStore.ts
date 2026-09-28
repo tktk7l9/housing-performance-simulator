@@ -44,7 +44,8 @@ export function getStepIds(mode: SimulationMode): readonly StepId[] {
   return mode === "renovation" ? STEP_IDS_RENOVATION : STEP_IDS_NEW_BUILD;
 }
 
-const SAVED_LIMIT = 20;
+/** Maximum number of saved simulations; saving beyond this drops the oldest. */
+export const SAVED_LIMIT = 20;
 
 interface HousingStore {
   currentStep: number;
@@ -53,6 +54,8 @@ interface HousingStore {
   selectedScenarioIds: string[];
   result: SimulationOutput | null;
   isCalculating: boolean;
+  /** The last calculate() threw; the results step shows a retry instead of spinning forever. */
+  calculateFailed: boolean;
   savedSimulations: SavedSimulation[];
 
   setStep: (step: number) => void;
@@ -131,6 +134,7 @@ export const useHousingStore = create<HousingStore>()(
       selectedScenarioIds: DEFAULT_SELECTED_SCENARIOS_NEW_BUILD,
       result: null,
       isCalculating: false,
+      calculateFailed: false,
       savedSimulations: [],
 
       setStep: (step) =>
@@ -196,7 +200,7 @@ export const useHousingStore = create<HousingStore>()(
         })),
 
       calculate: () => {
-        set({ isCalculating: true });
+        set({ isCalculating: true, calculateFailed: false });
         try {
           const { input, selectedScenarioIds } = get();
           const all = buildAllScenarios(input);
@@ -206,7 +210,7 @@ export const useHousingStore = create<HousingStore>()(
           set({ result, isCalculating: false });
         } catch (e) {
           console.error("calculate failed", e);
-          set({ isCalculating: false });
+          set({ isCalculating: false, calculateFailed: true });
         }
       },
 
