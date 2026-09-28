@@ -10,22 +10,16 @@ export function ScenarioStep({ onNext, onBack }: { onNext: () => void; onBack: (
   const input = useHousingStore((s) => s.input);
   const selectedIds = useHousingStore((s) => s.selectedScenarioIds);
   const toggle = useHousingStore((s) => s.toggleScenario);
-  const calculate = useHousingStore((s) => s.calculate);
 
   const scenarios = buildAllScenarios(input);
-
-  const handleNext = () => {
-    calculate();
-    onNext();
-  };
 
   return (
     <StepShell
       title="比較シナリオ"
       description="比較したい仕様パターンを選びます。標準仕様は基準として常に計算します。"
       onBack={onBack}
-      onNext={handleNext}
-      nextLabel="計算する"
+      onNext={onNext}
+      nextLabel="結果を見る"
     >
       <div className="grid grid-cols-1 gap-3">
         {scenarios.map((s) => {

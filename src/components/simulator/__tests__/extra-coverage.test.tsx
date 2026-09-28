@@ -4,7 +4,7 @@
  * - BuildingStep: switching addressPrefecture/addressCity/region/presence
  * - PerformanceStep: presetChange (custom / non-custom), cValue, windowSpec
  * - RenovationStep: ageBracket/UA/C/window/heater/heating, item toggle
- * - ScenarioStep: toggleScenario via checkbox / calculate+onNext via "計算する"
+ * - ScenarioStep: toggleScenario via checkbox / onNext via "結果を見る"
  * - EconomyStep: electricityRise select, subsidy apply-button branches
  * - SaveDialog: form submit / cancel / outer onOpenChange / ESC / backdrop click
  * - SimulatorApp: the path where a setStep change triggers scrolling, moving on to ResultsStep
@@ -179,12 +179,11 @@ describe("ScenarioStep interactions", () => {
     expect(after).not.toBe(before);
   });
 
-  it("計算するボタンで calculate + onNext", () => {
+  it("結果を見るボタンで onNext (calculation runs on the results step)", () => {
     const onNext = vi.fn();
     render(<ScenarioStep onNext={onNext} onBack={() => {}} />);
-    fireEvent.click(screen.getByText("計算する"));
+    fireEvent.click(screen.getByText("結果を見る"));
     expect(onNext).toHaveBeenCalled();
-    expect(useHousingStore.getState().result).not.toBeNull();
   });
 
   it("renovation モードでも描画", () => {

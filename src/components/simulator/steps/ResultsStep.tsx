@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useHousingStore } from "@/store/housingStore";
-import { StepShell } from "../StepShell";
 import { ScenarioComparison } from "../results/ScenarioComparison";
 import { CumulativeCostChart } from "../results/CumulativeCostChart";
 import { AnnualCostBreakdown } from "../results/AnnualCostBreakdown";
@@ -23,17 +22,18 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
   const calculate = useHousingStore((s) => s.calculate);
   const [saveOpen, setSaveOpen] = useState(false);
 
+  // SHIG 29: calculating is the only possible action here, so do it automatically
+  // (after a reload, a sidebar jump, or any input change that cleared the result).
+  useEffect(() => {
+    if (!result) calculate();
+  }, [result, calculate]);
+
   if (!result) {
     return (
-      <StepShell
-        title="結果"
-        description="まだ計算されていません。前のステップで「計算する」を押してください。"
-        onBack={onBack}
-        onNext={calculate}
-        nextLabel="今すぐ計算する"
-      >
-        <div />
-      </StepShell>
+      <section className="flex w-full flex-col gap-6" aria-busy="true">
+        <h2 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h2>
+        <p className="text-sm text-muted-foreground">計算しています…</p>
+      </section>
     );
   }
 

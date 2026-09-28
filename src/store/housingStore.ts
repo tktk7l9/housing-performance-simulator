@@ -143,7 +143,9 @@ export const useHousingStore = create<HousingStore>()(
           return { visitedSteps: visited };
         }),
 
-      updateInput: (patch) => set((s) => ({ input: { ...s.input, ...patch } })),
+      // Any input change invalidates the result so the results step never shows stale numbers
+      // (SHIG 35: data binding). ResultsStep recalculates whenever result is null.
+      updateInput: (patch) => set((s) => ({ input: { ...s.input, ...patch }, result: null })),
 
       setMode: (mode) =>
         set((s) => ({
@@ -159,6 +161,7 @@ export const useHousingStore = create<HousingStore>()(
           if (!prefecture) {
             return {
               input: { ...s.input, addressPrefecture: undefined, addressCity: undefined },
+              result: null,
             };
           }
           const { region } = lookupRegion(prefecture, city);
@@ -176,15 +179,17 @@ export const useHousingStore = create<HousingStore>()(
               region,
               uaValue: ua,
             },
+            result: null,
           };
         }),
 
-      setSelectedScenarioIds: (ids) => set({ selectedScenarioIds: ids }),
+      setSelectedScenarioIds: (ids) => set({ selectedScenarioIds: ids, result: null }),
       toggleScenario: (id) =>
         set((s) => ({
           selectedScenarioIds: s.selectedScenarioIds.includes(id)
             ? s.selectedScenarioIds.filter((x) => x !== id)
             : [...s.selectedScenarioIds, id],
+          result: null,
         })),
 
       calculate: () => {
