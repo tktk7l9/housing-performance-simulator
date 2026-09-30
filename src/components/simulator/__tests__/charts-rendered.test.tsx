@@ -114,7 +114,11 @@ describe("SensitivityChart (laid out)", () => {
     const { container } = render(<SensitivityChart input={DEFAULT_INPUT} />);
     const labels = Array.from(container.querySelectorAll(".recharts-label-list text")).map((n) => n.textContent ?? "");
     expect(labels.length).toBeGreaterThan(0);
-    for (const l of labels) expect(l).toMatch(/^[+-]?\d+$/);
+    // Positive values carry an explicit "+"; an unsigned "456" would read as a gain or a loss by colour only.
+    for (const l of labels) expect(l).toMatch(/^(\+[1-9]\d*|-[1-9]\d*|0)$/);
+    // The default input moves the total in both directions, so both signs must appear.
+    expect(labels.some((l) => l.startsWith("+"))).toBe(true);
+    expect(labels.some((l) => l.startsWith("-"))).toBe(true);
     // x axis ticks are signed too
     expect(screen.getAllByText(/^\+\d+$/).length).toBeGreaterThan(0);
   });

@@ -19,6 +19,7 @@ import { defaultRenovationInput } from "@/lib/housing/presets";
 import { runSimulation } from "@/lib/housing/calculator";
 import { buildAllScenarios } from "@/lib/housing/presets";
 import { RENOVATION_ITEMS, estimateOpenings } from "@/lib/housing/data/renovationCosts";
+import { SUBSIDIES } from "@/lib/housing/data/subsidies";
 import { formatManYen } from "@/lib/utils";
 
 vi.mock("recharts", async (importOriginal) => {
@@ -151,11 +152,12 @@ describe("ResultsStep save action", () => {
 
 describe("InitialCostBreakdown subsidy row", () => {
   it("shows the subsidy as a deduction when one is applied and a dash when none", () => {
-    const withSubsidy = { ...DEFAULT_INPUT, appliedSubsidyIds: ["battery-doe"] };
+    const subsidy = SUBSIDIES.find((s) => s.id === "battery-doe")!;
+    const withSubsidy = { ...DEFAULT_INPUT, appliedSubsidyIds: [subsidy.id] };
     const output = runSimulation(withSubsidy, buildAllScenarios(withSubsidy));
     render(<InitialCostBreakdown output={output} />);
     const row = screen.getByText("補助金（控除）").closest("tr")!;
-    expect(row.textContent).toContain(`-${formatManYen(200_000)}`);
+    expect(row.textContent).toContain(`-${formatManYen(subsidy.amount)}`);
 
     const none = runSimulation(DEFAULT_INPUT, buildAllScenarios(DEFAULT_INPUT));
     const { unmount } = render(<InitialCostBreakdown output={none} />);

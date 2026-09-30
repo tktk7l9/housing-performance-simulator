@@ -14,7 +14,8 @@ import SimulatorPage from "../simulator/page";
 import OgImage, { alt as ogAlt, size as ogSize, contentType as ogType } from "../opengraph-image";
 import AppleIcon, { size as iconSize, contentType as iconType } from "../apple-icon";
 import { encodeInput } from "@/lib/share/encoder";
-import { DEFAULT_INPUT } from "@/store/housingStore";
+import { DEFAULT_INPUT, useHousingStore } from "@/store/housingStore";
+import { useToastStore } from "@/store/toastStore";
 
 vi.mock("next/link", () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string; prefetch?: boolean }) => {
@@ -135,10 +136,13 @@ describe("RootLayout", () => {
 
 describe("route wrappers", () => {
   it("SharePage awaits the token param and hands it to SharedView", async () => {
-    const token = encodeInput(DEFAULT_INPUT);
+    // A non-default value proves the decoded token reached the store rather than the error path.
+    const token = encodeInput({ ...DEFAULT_INPUT, livingYears: 42 });
     const page = await SharePage({ params: Promise.resolve({ token }) });
     render(page);
     expect(screen.getByText(/共有された入力を読み込んで/)).toBeTruthy();
+    expect(useHousingStore.getState().input.livingYears).toBe(42);
+    expect(useToastStore.getState().toasts.some((t) => t.tone === "error")).toBe(false);
     expect(replace).toHaveBeenCalledWith("/simulator");
   });
 
