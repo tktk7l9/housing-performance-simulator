@@ -13,12 +13,9 @@ export function splitLabel(label: string, maxChars: number): string[] {
       lines.push(current);
       current = "";
     }
+    // `current` is always empty here: a token longer than maxChars cannot fit after it.
     let rest = token;
     while (rest.length > maxChars) {
-      if (current) {
-        lines.push(current);
-        current = "";
-      }
       lines.push(rest.slice(0, maxChars));
       rest = rest.slice(maxChars);
     }
