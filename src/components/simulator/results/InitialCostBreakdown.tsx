@@ -15,7 +15,8 @@ export function InitialCostBreakdown({ output }: { output: SimulationOutput }) {
   return (
     <div className="flex flex-col gap-2">
     <p className="text-xs text-muted-foreground md:hidden">表は横にスクロールできます →</p>
-    <div className="overflow-x-auto">
+    {/* Keyboard users can focus the scroll container and move it with the arrow keys */}
+    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="初期費用の内訳（表）">
       <table className="w-full min-w-max text-sm">
         <thead className="border-b text-left">
           <tr className="text-xs uppercase tracking-wider text-muted-foreground">

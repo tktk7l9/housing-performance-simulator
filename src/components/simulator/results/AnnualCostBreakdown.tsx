@@ -38,7 +38,10 @@ export function AnnualCostBreakdown({ scenarios, electricityPrice, gasPrice, sel
   });
 
   return (
-    <div className="h-[300px] w-full">
+    <figure className="h-[300px] w-full">
+      <figcaption className="sr-only">
+        1年目の光熱費内訳（千円/年）。{data.map((d) => `${d.name}: 暖冷房${d.暖冷房}、給湯${d.給湯}、その他家電${d.その他家電}、売電収入${d.売電収入}`).join("。")}
+      </figcaption>
       <ResponsiveContainer>
         {/* SHIG 28: stackOffset="sign" draws feed-in revenue below zero instead of stacking it like a cost */}
         <BarChart data={data} stackOffset="sign" margin={{ top: 10, right: 16, bottom: 10, left: 0 }}>
@@ -54,6 +57,6 @@ export function AnnualCostBreakdown({ scenarios, electricityPrice, gasPrice, sel
           <Bar dataKey="売電収入" stackId="a" fill="var(--chart-2)" />
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </figure>
   );
 }

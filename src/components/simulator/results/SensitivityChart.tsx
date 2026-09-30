@@ -45,7 +45,10 @@ export function SensitivityChart({ input }: { input: HousingInput }) {
       <p className="text-xs text-muted-foreground">
         基準（あなたの仕様）からの {input.livingYears} 年累計コスト変化（万円）。左に伸びる = 安くなる方向、右 = 高くなる方向。影響度の大きい順にソート。
       </p>
-      <div className="h-[320px] w-full">
+      <figure className="h-[320px] w-full">
+        <figcaption className="sr-only">
+          {data.map((d) => `${d.label}: ${signedManYen(d.lowDelta)}〜${signedManYen(d.highDelta)}`).join("、")}
+        </figcaption>
         <ResponsiveContainer>
           <BarChart
             data={data}
@@ -89,7 +92,7 @@ export function SensitivityChart({ input }: { input: HousingInput }) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </figure>
     </div>
   );
 }

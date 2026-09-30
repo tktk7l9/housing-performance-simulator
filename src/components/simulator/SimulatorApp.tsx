@@ -51,7 +51,7 @@ export function SimulatorApp() {
       <aside className="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto rounded-lg border bg-card">
         <TrailSidebar />
       </aside>
-      <main ref={mainRef} className="min-w-0">
+      <main id="main" ref={mainRef} className="min-w-0">
         {stepId === "building" && <BuildingStep onNext={goNext} />}
         {stepId === "performance" && <PerformanceStep onNext={goNext} onBack={goBack} />}
         {stepId === "equipment" && <EquipmentStep onNext={goNext} onBack={goBack} />}

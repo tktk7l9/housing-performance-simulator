@@ -15,9 +15,14 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 )
 CardHeader.displayName = "CardHeader"
 
-const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("text-xl font-semibold leading-tight tracking-tight", className)} {...props} />
+interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  /** Render as a real heading when the card sits in a document outline (defaults to a div). */
+  as?: "div" | "h2" | "h3"
+}
+
+const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
+  ({ className, as: Comp = "div", ...props }, ref) => (
+    <Comp ref={ref} className={cn("text-xl font-semibold leading-tight tracking-tight", className)} {...props} />
   )
 )
 CardTitle.displayName = "CardTitle"

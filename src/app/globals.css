@@ -12,7 +12,8 @@
   --popover-foreground: oklch(0.20 0.04 250);
 
   --primary: oklch(0.52 0.16 250);
-  --primary-foreground: oklch(0.99 0.005 245);
+  /* Pure white: the near-white tint sat at 4.44:1 on primary, just under WCAG AA (4.5:1) */
+  --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.96 0.012 245);
   --secondary-foreground: oklch(0.28 0.06 250);
@@ -23,7 +24,8 @@
   --accent: oklch(0.94 0.025 245);
   --accent-foreground: oklch(0.32 0.10 250);
 
-  --destructive: oklch(0.60 0.22 27);
+  /* Darkened from L 0.60 so 14px error text reaches 4.5:1 on the page background */
+  --destructive: oklch(0.55 0.22 27);
   --destructive-foreground: oklch(0.99 0.005 245);
 
   --success: oklch(0.60 0.13 195);

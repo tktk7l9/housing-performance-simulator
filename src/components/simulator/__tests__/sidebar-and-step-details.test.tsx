@@ -204,13 +204,13 @@ describe("ToastHost timer", () => {
 describe("SimulatorApp next / back", () => {
   it("次へ and 前へ move between steps and mark them visited", () => {
     render(<SimulatorApp />);
-    expect(screen.getByRole("heading", { level: 2 }).textContent).toContain("建物条件");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("建物条件");
     fireEvent.click(screen.getByRole("button", { name: "次へ" }));
     expect(useHousingStore.getState().currentStep).toBe(1);
-    expect(screen.getByRole("heading", { level: 2 }).textContent).toContain("住宅性能");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("住宅性能");
     fireEvent.click(screen.getByRole("button", { name: "前へ" }));
     expect(useHousingStore.getState().currentStep).toBe(0);
-    expect(screen.getByRole("heading", { level: 2 }).textContent).toContain("建物条件");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("建物条件");
     // A visited step keeps its check mark in the sidebar
     const nav = screen.getByRole("navigation", { name: "ステップ" });
     expect(within(nav).getByRole("button", { name: /2\. 住宅性能/ })).toBeTruthy();
