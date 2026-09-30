@@ -13,6 +13,9 @@ import { SimulatorApp } from "../SimulatorApp";
 import { ResultsStep } from "../steps/ResultsStep";
 import { EconomyStep } from "../steps/EconomyStep";
 import { InitialCostBreakdown } from "../results/InitialCostBreakdown";
+import { CumulativeCostChart } from "../results/CumulativeCostChart";
+import { AnnualCostBreakdown } from "../results/AnnualCostBreakdown";
+import { SensitivityChart } from "../results/SensitivityChart";
 import { useHousingStore, DEFAULT_INPUT, defaultSelectedScenarios } from "@/store/housingStore";
 import { runSimulation } from "@/lib/housing/calculator";
 import { buildAllScenarios } from "@/lib/housing/presets";
@@ -88,6 +91,10 @@ describe("Dialog keyboard handling", () => {
   });
 
   it("does not re-run the focus setup when an inline onOpenChange changes identity", () => {
+    // A real opener: a re-run effect would send focus back to it and then to the first input
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    opener.focus();
     const { rerender } = render(
       <Dialog open onOpenChange={() => {}}>
         <input aria-label="a" />
@@ -102,6 +109,7 @@ describe("Dialog keyboard handling", () => {
       </Dialog>,
     );
     expect(document.activeElement).toBe(screen.getByLabelText("b"));
+    opener.remove();
   });
 
   it("returns focus to the opener even when a child took focus with autoFocus", () => {
@@ -110,6 +118,7 @@ describe("Dialog keyboard handling", () => {
     opener.focus();
     const { unmount } = render(
       <Dialog open onOpenChange={() => {}}>
+        <input aria-label="before" />
         <input aria-label="auto" autoFocus />
       </Dialog>,
     );
@@ -180,6 +189,38 @@ describe("Heading outline and landmarks", () => {
     render(<InitialCostBreakdown output={output} />);
     const region = screen.getByRole("region", { name: /初期費用の内訳/ });
     expect(region.getAttribute("tabindex")).toBe("0");
+  });
+});
+
+describe("Chart captions (SHIG 96)", () => {
+  const output = runSimulation(DEFAULT_INPUT, buildAllScenarios(DEFAULT_INPUT));
+
+  it("each chart carries a visually hidden caption with the plotted values", () => {
+    const { container } = render(
+      <>
+        <CumulativeCostChart scenarios={output.scenarios} livingYears={DEFAULT_INPUT.livingYears} />
+        <AnnualCostBreakdown
+          scenarios={output.scenarios}
+          electricityPrice={DEFAULT_INPUT.electricityPriceBuy}
+          gasPrice={DEFAULT_INPUT.gasPrice}
+          sellPriceFit={DEFAULT_INPUT.sellPriceFit}
+        />
+        <SensitivityChart input={DEFAULT_INPUT} />
+      </>,
+    );
+    const captions = Array.from(container.querySelectorAll("figure > figcaption"));
+    expect(captions).toHaveLength(3);
+    for (const c of captions) {
+      expect(c.classList.contains("sr-only")).toBe(true);
+      expect(c.hasAttribute("hidden")).toBe(false);
+      expect(c.textContent).toMatch(/\d/);
+    }
+    const [cumulative, annual] = captions.map((c) => c.textContent ?? "");
+    for (const s of output.scenarios) {
+      expect(cumulative).toContain(s.scenarioName);
+      expect(cumulative).toContain(`${Math.round(s.cumulativeTotal / 10000).toLocaleString()}万円`);
+      expect(annual).toContain(s.scenarioName);
+    }
   });
 });
 
