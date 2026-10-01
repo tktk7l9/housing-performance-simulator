@@ -9,14 +9,17 @@ export default function Home() {
           <Link href="/" prefetch={false} className="font-semibold tracking-tight">
             住宅性能シミュレーター
           </Link>
-          <nav className="text-sm text-muted-foreground flex items-center gap-5">
-            <a href="#features" className="hover:text-foreground">特徴</a>
-            <a href="#how" className="hover:text-foreground">使い方</a>
-            <a href="#disclaimer" className="hover:text-foreground">注意</a>
+          {/* SHIG 13 / 78: 44px tall link targets */}
+          <nav aria-label="ページ内" className="text-sm text-muted-foreground flex items-center gap-5">
+            <a href="#features" className="inline-flex min-h-11 items-center hover:text-foreground">特徴</a>
+            <a href="#how" className="inline-flex min-h-11 items-center hover:text-foreground">使い方</a>
+            <a href="#disclaimer" className="inline-flex min-h-11 items-center hover:text-foreground">注意</a>
           </nav>
         </div>
       </header>
 
+      {/* SHIG 59 / 33: one main landmark so assistive tech can jump to the content */}
+      <main id="main">
       <section className="relative border-b hero-bg">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-16 md:py-24 grid grid-cols-1 md:grid-cols-[1fr_minmax(0,440px)] gap-10 md:gap-12 items-center relative">
           <div>
@@ -97,11 +100,12 @@ export default function Home() {
           </p>
         </div>
       </section>
+      </main>
 
       <footer className="border-t">
         <div className="max-w-[1200px] mx-auto px-5 md:px-8 py-8 flex items-center justify-between text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} 住宅性能シミュレーター</span>
-          <Link href="/simulator" prefetch={false} className="hover:text-foreground">シミュレーターへ →</Link>
+          <Link href="/simulator" prefetch={false} className="inline-flex min-h-11 items-center hover:text-foreground">シミュレーターへ →</Link>
         </div>
       </footer>
     </div>

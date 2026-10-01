@@ -52,9 +52,9 @@ export function ScenarioComparison({ output }: { output: SimulationOutput }) {
             )}
           >
             <header className="flex flex-col gap-1.5">
-              <h3 className="text-sm font-semibold leading-tight" title={s.scenarioName}>
+              <h2 className="text-sm font-semibold leading-tight" title={s.scenarioName}>
                 {s.scenarioName}
-              </h3>
+              </h2>
               {isCheapest && (
                 <Badge variant="default" className="self-start whitespace-nowrap">累計が最も低い</Badge>
               )}
@@ -143,7 +143,7 @@ function Stat({
     <div className="flex flex-col gap-0.5 min-w-0">
       <div className="flex items-baseline gap-1">
         <span className="text-[11px] text-muted-foreground leading-tight">{label}</span>
-        {hint && <span className="text-[10px] text-muted-foreground/70">{hint}</span>}
+        {hint && <span className="text-[11px] text-muted-foreground">{hint}</span>}
       </div>
       <span
         className={cn(

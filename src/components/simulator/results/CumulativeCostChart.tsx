@@ -37,7 +37,10 @@ export function CumulativeCostChart({ scenarios, livingYears }: { scenarios: Sce
   });
 
   return (
-    <div className="h-[360px] w-full">
+    <figure className="h-[360px] w-full">
+      <figcaption className="sr-only">
+        {livingYears}年間の累計コスト推移（万円）。{scenarios.map((s) => `${s.scenarioName}: ${Math.round(s.cumulativeTotal / 10000).toLocaleString()}万円`).join("、")}
+      </figcaption>
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 10, right: 16, bottom: 10, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.90 0.01 220)" />
@@ -62,6 +65,6 @@ export function CumulativeCostChart({ scenarios, livingYears }: { scenarios: Sce
           ))}
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </figure>
   );
 }

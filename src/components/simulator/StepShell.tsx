@@ -26,7 +26,8 @@ export function StepShell({
   return (
     <section className="flex w-full flex-col gap-6">
       <header>
-        <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
+        {/* The step title is the page's only level-one heading; the app name in the header is a link */}
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description && <p className="mt-2 text-sm text-muted-foreground">{description}</p>}
       </header>
       <Card>

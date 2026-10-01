@@ -134,6 +134,29 @@ describe("RootLayout", () => {
   });
 });
 
+describe("skip link target", () => {
+  it("the layout's skip link points at a main landmark that every page renders (SHIG 59)", async () => {
+    const html = renderToStaticMarkup(
+      <RootLayout>
+        <p>child</p>
+      </RootLayout>
+    );
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const skip = doc.querySelector("body > a");
+    expect(skip?.textContent).toBe("本文へ移動");
+    const target = skip?.getAttribute("href");
+    expect(target).toBe("#main");
+
+    const { SharedView } = await import("../share/[token]/SharedView");
+    for (const page of [<Home key="home" />, <NotFound key="404" />, <SharedView key="share" token={encodeInput(DEFAULT_INPUT)} />]) {
+      const { container, unmount } = render(page);
+      const main = container.querySelector(target!);
+      expect(main?.tagName).toBe("MAIN");
+      unmount();
+    }
+  });
+});
+
 describe("route wrappers", () => {
   it("SharePage awaits the token param and hands it to SharedView", async () => {
     // A non-default value proves the decoded token reached the store rather than the error path.

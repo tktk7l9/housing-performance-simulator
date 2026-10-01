@@ -36,7 +36,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
     // SHIG 55: say what went wrong and what to do next instead of spinning forever
     return (
       <section className="flex w-full flex-col gap-4">
-        <h2 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h2>
+        <h1 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h1>
         <p role="alert" className="text-sm text-destructive">
           計算できませんでした。入力値を見直してから、もう一度お試しください。
         </p>
@@ -53,7 +53,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
   if (!result) {
     return (
       <section className="flex w-full flex-col gap-6" aria-busy="true">
-        <h2 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h2>
+        <h1 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h1>
         <p className="text-sm text-muted-foreground">計算しています…</p>
       </section>
     );
@@ -63,7 +63,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
     <section className="flex w-full flex-col gap-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h2>
+          <h1 className="text-2xl font-semibold tracking-tight">シミュレーション結果</h1>
           <p className="text-sm text-muted-foreground">
             {input.livingYears}年間の累計コストでシナリオを比較。
           </p>
@@ -86,7 +86,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>累計コスト推移（{input.livingYears}年）</CardTitle>
+          <CardTitle as="h2">累計コスト推移（{input.livingYears}年）</CardTitle>
         </CardHeader>
         <CardContent>
           <CumulativeCostChart scenarios={result.scenarios} livingYears={input.livingYears} />
@@ -96,7 +96,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
       <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>1年目の光熱費内訳</CardTitle>
+            <CardTitle as="h2">1年目の光熱費内訳</CardTitle>
           </CardHeader>
           <CardContent>
             <AnnualCostBreakdown
@@ -113,7 +113,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
       {/* SHIG 85: the cost table gets the full width instead of half a column */}
       <Card>
         <CardHeader>
-          <CardTitle>初期費用の内訳</CardTitle>
+          <CardTitle as="h2">初期費用の内訳</CardTitle>
         </CardHeader>
         <CardContent>
           <InitialCostBreakdown output={result} />
@@ -122,7 +122,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>感度分析（どのパラメータが効くか）</CardTitle>
+          <CardTitle as="h2">感度分析（どのパラメータが効くか）</CardTitle>
         </CardHeader>
         <CardContent>
           <SensitivityChart input={input} />
@@ -131,7 +131,7 @@ export function ResultsStep({ onBack }: { onBack: () => void }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>計算根拠</CardTitle>
+          <CardTitle as="h2">計算根拠</CardTitle>
         </CardHeader>
         <CardContent>
           <AssumptionsPanel output={result} />

@@ -107,6 +107,13 @@ export default function RootLayout({
         <link rel="preload" as="image" href="/hero-house.svg" />
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground">
+        {/* SHIG 59: keyboard users can jump past the header and step list straight to the content */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-3 focus:text-primary-foreground"
+        >
+          本文へ移動
+        </a>
         {children}
         {/* Cloudflare Web Analytics (the token is an identifier meant to be public, not a secret) */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts --

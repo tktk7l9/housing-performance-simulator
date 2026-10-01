@@ -3,7 +3,8 @@ import Link from "next/link";
 // SHIG 60: a 404 page with a way out instead of the framework default
 export default function NotFound() {
   return (
-    <div className="max-w-[600px] mx-auto px-5 py-20 text-center">
+    // The root layout's skip link points at #main, so every page needs that landmark
+    <main id="main" className="max-w-[600px] mx-auto px-5 py-20 text-center">
       <h1 className="text-xl font-semibold">ページが見つかりません</h1>
       <p className="mt-3 text-sm text-muted-foreground">
         URL が変わったか、途中で切れている可能性があります。
@@ -16,6 +17,6 @@ export default function NotFound() {
           シミュレーターへ
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

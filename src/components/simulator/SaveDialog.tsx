@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useHousingStore } from "@/store/housingStore";
 import type { SimulationMode } from "@/lib/housing/types";
@@ -51,7 +52,9 @@ export function SaveDialog({ open, onOpenChange }: SaveDialogProps) {
       description="ブラウザ内（localStorage）に保存します。最大 20 件まで保持されます。"
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <Label htmlFor="save-name">名前</Label>
         <Input
+          id="save-name"
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}

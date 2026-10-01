@@ -81,7 +81,7 @@ export function TrailSidebar() {
             }}
             aria-current={isCurrent ? "step" : undefined}
             className={cn(
-              "text-left rounded-md px-3 py-2",
+              "min-h-11 text-left rounded-md px-3 py-2",
               isCurrent && "bg-accent text-accent-foreground",
               !isCurrent && "hover:bg-muted"
             )}

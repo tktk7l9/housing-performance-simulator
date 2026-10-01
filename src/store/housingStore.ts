@@ -8,7 +8,7 @@ import type {
   SimulationOutput,
 } from "@/lib/housing/types";
 import { runSimulation } from "@/lib/housing/calculator";
-import { buildAllScenarios } from "@/lib/housing/presets";
+import { buildAllScenarios, defaultRenovationInput } from "@/lib/housing/presets";
 import { INSULATION_PRESETS } from "@/lib/housing/data/insulationPresets";
 import {
   DEFAULT_ELECTRICITY_PRICE,
@@ -202,7 +202,14 @@ export const useHousingStore = create<HousingStore>()(
       calculate: () => {
         set({ isCalculating: true, calculateFailed: false });
         try {
-          const { input, selectedScenarioIds } = get();
+          const { selectedScenarioIds } = get();
+          let { input } = get();
+          // Renovation mode needs the existing-performance block; seed it when the step
+          // was skipped (sidebar jump, share link) so the results step never errors out.
+          if (input.mode === "renovation" && !input.renovation) {
+            input = { ...input, renovation: defaultRenovationInput(input) };
+            set({ input });
+          }
           const all = buildAllScenarios(input);
           const selected = all.filter((s) => selectedScenarioIds.includes(s.id));
           const scenarios = selected.length > 0 ? selected : all;
