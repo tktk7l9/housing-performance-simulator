@@ -4,17 +4,17 @@ import { encodeInput, decodeInput } from "../share/encoder";
 import type { HousingInput } from "../housing/types";
 
 describe("utils", () => {
-  it("cn: クラス結合 + Tailwind 衝突解決", () => {
+  it("cn: joins classes and resolves Tailwind conflicts", () => {
     expect(cn("a", "b")).toContain("a");
     expect(cn("p-2", "p-4")).toBe("p-4");
   });
-  it("cn: falsy・オブジェクト形式", () => {
+  it("cn: handles falsy values and object syntax", () => {
     expect(cn("a", false, null, undefined, { foo: true })).toContain("foo");
   });
-  it("formatYen: 整数化＋3桁区切り", () => {
+  it("formatYen: rounds to an integer with thousands separators", () => {
     expect(formatYen(1234.7)).toBe("1,235円");
   });
-  it("formatManYen: 千円単位を万円・小数1桁に丸める", () => {
+  it("formatManYen: rounds to man-yen (万円) with one decimal", () => {
     // 1,234,567 yen -> 123.5 man-yen (万円)
     expect(formatManYen(1234567)).toBe("123.5万円");
   });
@@ -24,10 +24,10 @@ describe("utils", () => {
   it("formatKg", () => {
     expect(formatKg(1234.5)).toBe("1,235 kg");
   });
-  it("formatYears: 有限数値は 1桁", () => {
+  it("formatYears: finite numbers get one decimal", () => {
     expect(formatYears(7.34)).toBe("7.3 年");
   });
-  it("formatYears: Infinity / 負数 / NaN は '—'", () => {
+  it("formatYears: Infinity / negative / NaN become '—'", () => {
     expect(formatYears(Infinity)).toBe("—");
     expect(formatYears(-1)).toBe("—");
     expect(formatYears(NaN)).toBe("—");
@@ -61,7 +61,7 @@ describe("share/encoder", () => {
     appliedSubsidyIds: ["zeh"],
   };
 
-  it("encodeInput → decodeInput ラウンドトリップ", () => {
+  it("encodeInput -> decodeInput round-trips", () => {
     const token = encodeInput(input);
     expect(typeof token).toBe("string");
     expect(token.length).toBeGreaterThan(0);
@@ -88,15 +88,15 @@ describe("share/encoder", () => {
     expect(decodeInput("%E0%A4%A")).toBeNull();
   });
 
-  it("decodeInput: 不正な token は null", () => {
+  it("decodeInput: an invalid token returns null", () => {
     expect(decodeInput("!!!invalid!!!")).toBeNull();
   });
 
-  it("decodeInput: 空文字も null", () => {
+  it("decodeInput: an empty string returns null", () => {
     expect(decodeInput("")).toBeNull();
   });
 
-  it("decodeInput: JSON.parse できない文字列は catch で null", () => {
+  it("decodeInput: unparsable JSON returns null", () => {
     // LZString fails to decompress -> null -> early return null
     expect(decodeInput("ZZZ")).toBeNull();
   });

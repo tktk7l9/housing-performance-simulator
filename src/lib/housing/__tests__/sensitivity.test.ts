@@ -32,7 +32,7 @@ function baseInput(overrides: Partial<HousingInput> = {}): HousingInput {
 }
 
 describe("runSensitivity", () => {
-  it("6 パラメータすべての結果が返る", () => {
+  it("returns results for all six parameters", () => {
     const r = runSensitivity(baseInput());
     expect(r).toHaveLength(6);
     const keys = r.map((d) => d.key).sort();
@@ -46,14 +46,14 @@ describe("runSensitivity", () => {
     ]);
   });
 
-  it("影響度（impact）の降順でソート", () => {
+  it("sorts by impact in descending order", () => {
     const r = runSensitivity(baseInput());
     for (let i = 1; i < r.length; i++) {
       expect(r[i - 1].impact).toBeGreaterThanOrEqual(r[i].impact);
     }
   });
 
-  it("各行の centerLabel/lowLabel/highLabel/centerCost が定義済み", () => {
+  it("defines centerLabel, lowLabel, highLabel and centerCost on every row", () => {
     const r = runSensitivity(baseInput());
     for (const row of r) {
       expect(row.centerLabel).toBeTruthy();
@@ -63,7 +63,7 @@ describe("runSensitivity", () => {
     }
   });
 
-  it("リフォームモードでも動作", () => {
+  it("works in renovation mode", () => {
     const r = runSensitivity(
       baseInput({
         mode: "renovation",
@@ -82,32 +82,32 @@ describe("runSensitivity", () => {
     expect(r).toHaveLength(6);
   });
 
-  it("electricityRise=steep をベースにすると high は同じ steep", () => {
+  it("with electricityRise=steep as the base, high stays steep", () => {
     const r = runSensitivity(baseInput({ electricityRise: "steep" }));
     const row = r.find((d) => d.key === "electricityRise")!;
     expect(row.centerLabel).toContain("+5%");
   });
 
-  it("solarCapacity=0 でも low は 0 にクランプ", () => {
+  it("clamps low to 0 when solarCapacity=0", () => {
     const r = runSensitivity(baseInput({ solarCapacity: 0 }));
     const row = r.find((d) => d.key === "solarCapacity")!;
     expect(row.lowLabel).toContain("0 kW");
   });
 
-  it("uaValue 下端は 0.15 にクランプ", () => {
+  it("clamps the low uaValue to 0.15", () => {
     const r = runSensitivity(baseInput({ uaValue: 0.20 }));
     const row = r.find((d) => d.key === "uaValue")!;
     // 0.20 - 0.15 = 0.05 -> clamped to 0.15
     expect(row.lowLabel).toContain("0.15");
   });
 
-  it("electricityPriceBuy: low が単価 5 円にクランプされる極端ケース", () => {
+  it("electricityPriceBuy: clamps low to 5 yen in the extreme case", () => {
     const r = runSensitivity(baseInput({ electricityPriceBuy: 6 })); // 0.7*6=4.2 -> clamped to 5
     const row = r.find((d) => d.key === "electricityPrice")!;
     expect(row.lowLabel).toContain("5");
   });
 
-  it("sellPriceFit: low は 0 にクランプ", () => {
+  it("sellPriceFit: clamps low to 0", () => {
     const r = runSensitivity(baseInput({ sellPriceFit: 3 })); // 3-5=-2 → 0
     const row = r.find((d) => d.key === "sellPriceFit")!;
     expect(row.lowLabel).toContain("0");

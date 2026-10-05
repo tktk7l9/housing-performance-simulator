@@ -17,12 +17,12 @@ beforeEach(() => {
 });
 
 describe("SavedList interactions", () => {
-  it("空: メッセージ表示", () => {
+  it("shows a message when empty", () => {
     render(<SavedList />);
     expect(screen.getByText(/保存済みなし/)).toBeTruthy();
   });
 
-  it("保存あり: summary 込みで表示・renovation ラベル", () => {
+  it("shows saves with summary and the renovation label", () => {
     useHousingStore.setState({
       savedSimulations: [
         {
@@ -49,7 +49,7 @@ describe("SavedList interactions", () => {
     expect(screen.getAllByText(/新築/).length).toBeGreaterThan(0);
   });
 
-  it("復元ボタンクリックで loadSaved", () => {
+  it("the restore button calls loadSaved", () => {
     useHousingStore.setState({
       savedSimulations: [{
         id: "s1", name: "X", savedAt: new Date().toISOString(), schemaVersion: 2,
@@ -62,7 +62,7 @@ describe("SavedList interactions", () => {
     expect(useHousingStore.getState().input.floorArea).toBe(200);
   });
 
-  it("削除ボタンで確認なしに deleteSaved (undo is covered in failsafe.test.tsx)", () => {
+  it("the delete button calls deleteSaved without confirmation (undo is covered in failsafe.test.tsx)", () => {
     useHousingStore.setState({
       savedSimulations: [{
         id: "s1", name: "X", savedAt: new Date().toISOString(), schemaVersion: 2,

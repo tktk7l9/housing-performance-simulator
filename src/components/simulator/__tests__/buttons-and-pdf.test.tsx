@@ -31,19 +31,19 @@ vi.mock("@react-pdf/renderer", () => {
 const result = runSimulation(DEFAULT_INPUT, buildAllScenarios(DEFAULT_INPUT));
 
 describe("ResultPdfDocument", () => {
-  it("Document を返す", () => {
+  it("returns a Document", () => {
     const { container } = render(<ResultPdfDocument output={result} />);
     expect(container.querySelector('[data-pdf-tag="doc"]')).toBeTruthy();
   });
 });
 
 describe("PdfExportButton", () => {
-  it("初期状態: ボタンが描画される", () => {
+  it("renders the button initially", () => {
     render(<PdfExportButton output={result} />);
     expect(screen.getByText(/PDF を保存/)).toBeTruthy();
   });
 
-  it("クリックで PDF blob を生成・ダウンロード", async () => {
+  it("generates and downloads a PDF blob on click", async () => {
     URL.createObjectURL = vi.fn().mockReturnValue("blob:mock");
     URL.revokeObjectURL = vi.fn();
     HTMLAnchorElement.prototype.click = vi.fn();
@@ -57,12 +57,12 @@ describe("PdfExportButton", () => {
 });
 
 describe("ShareUrlButton", () => {
-  it("初期: コピーボタン表示", () => {
+  it("shows the copy button initially", () => {
     render(<ShareUrlButton input={DEFAULT_INPUT} />);
     expect(screen.getByText(/URL をコピー|共有/i)).toBeTruthy();
   });
 
-  it("clipboard.writeText 成功でアイコン切替", async () => {
+  it("switches the icon when clipboard.writeText succeeds", async () => {
     const write = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText: write },
@@ -74,7 +74,7 @@ describe("ShareUrlButton", () => {
     expect(write.mock.calls[0][0]).toContain("/share/");
   });
 
-  it("clipboard 失敗時は window.prompt にフォールバック", async () => {
+  it("falls back to window.prompt when the clipboard fails", async () => {
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText: () => Promise.reject(new Error("denied")) },
       configurable: true,

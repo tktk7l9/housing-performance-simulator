@@ -116,7 +116,7 @@ describe("evaluateResult", () => {
     expect(WEIGHTS.economy + WEIGHTS.environment + WEIGHTS.autonomy).toBe(100);
   });
 
-  it("基本ケース: score / grade / breakdown が返る", () => {
+  it("returns score, grade and breakdown", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     const e = evaluateResult(out)!;
@@ -126,7 +126,7 @@ describe("evaluateResult", () => {
     expect(e.breakdown.economy + e.breakdown.environment + e.breakdown.autonomy).toBeGreaterThan(0);
   });
 
-  it("user シナリオが見つからない場合は null", () => {
+  it("returns null without the user scenario", () => {
     const input = baseInput();
     const out = runSimulation(input, [buildUserScenario(input)]);
     // Remove baseline to create a state with no target
@@ -135,7 +135,7 @@ describe("evaluateResult", () => {
     expect(e).toBeNull();
   });
 
-  it("baseline が見つからない場合は null", () => {
+  it("returns null without the baseline", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     out.scenarios = out.scenarios.filter((s) => s.scenarioId !== out.baselineId);
@@ -143,7 +143,7 @@ describe("evaluateResult", () => {
     expect(e).toBeNull();
   });
 
-  it("高性能シナリオを user として評価すると経済性・環境性が出る", () => {
+  it("scoring the high-performance scenario as user yields economy and environment scores", () => {
     // Set the user spec to high performance + solar + battery
     const input = baseInput({
       insulationPreset: "heat20-g2",
@@ -160,7 +160,7 @@ describe("evaluateResult", () => {
     expect(e.breakdown.autonomy).toBeGreaterThan(0);
   });
 
-  it("payback < halfLife → 投資回収満点 (20pt)", () => {
+  it("payback < halfLife gives the full payback score (20 pt)", () => {
     const input = baseInput({
       insulationPreset: "zeh",
       uaValue: 0.6,
@@ -173,7 +173,7 @@ describe("evaluateResult", () => {
     expect(e.breakdown.economyPayback).toBeGreaterThanOrEqual(0);
   });
 
-  it("payback Infinity だが累計プラス → プチ加点 (8pt) 分岐", () => {
+  it("infinite payback with a positive cumulative delta gives a small bonus (8 pt)", () => {
     // baseline and target are nearly identical -> push payback toward Infinity
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
@@ -181,7 +181,7 @@ describe("evaluateResult", () => {
     expect(e.breakdown).toBeDefined();
   });
 
-  it("strengths / cautions に内容が入る (cumDelta>0 や CO2 高)", () => {
+  it("fills strengths and cautions (cumDelta > 0, high CO2)", () => {
     const input = baseInput({
       insulationPreset: "heat20-g2",
       uaValue: 0.46,
@@ -195,14 +195,14 @@ describe("evaluateResult", () => {
     expect(Array.isArray(e.cautions)).toBe(true);
   });
 
-  it("livingYears=0 でも安全 (Math.max(1,...) でクランプ)", () => {
+  it("is safe with livingYears=0 (clamped by Math.max(1, ...))", () => {
     const input = baseInput({ livingYears: 0 });
     const out = runSimulation(input, buildAllScenarios(input));
     const e = evaluateResult(out)!;
     expect(e).toBeTruthy();
   });
 
-  it("初期費用差額 > 300万 で資金計画 caution", () => {
+  it("an initial cost delta over 3,000,000 yen adds a funding caution", () => {
     const input = baseInput({
       insulationPreset: "heat20-g3",
       uaValue: 0.26,
@@ -214,11 +214,9 @@ describe("evaluateResult", () => {
     const e = evaluateResult(out)!;
     expect(e.cautions.length).toBeGreaterThanOrEqual(0);
   });
-
-  // gradeFromScore の各境界に到達するため、score を直接合成して headline を網羅
 });
 
-describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網羅", () => {
+describe("evaluateResult covers every grade headline with a synthetic SimulationOutput", () => {
   /**
    * grade is the threshold ladder of gradeFromScore (S>=90 / A>=75 / B>=60 / C>=40 / otherwise D),
    * headline is the mode × grade switch in generateHeadline. Both are tables of 5 rows / 10 branches,
@@ -278,7 +276,7 @@ describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網�
     expect(e.headline).toContain(c.headline);
   });
 
-  it("payback>livingYears で 0pt 加点なし", () => {
+  it("payback > livingYears gives 0 pt", () => {
     const out = makeOutput("new-build",
       { cumulativeTotal: 99, annualCo2Reduction: 100, selfConsumptionRate: 0 },
       100, 50, 30, 0); // payback=50 > livingYears=30
@@ -286,7 +284,7 @@ describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網�
     expect(e.breakdown.economyPayback).toBe(0);
   });
 
-  it("payback Infinity だが cumDelta マイナス → cautions に居住年数内回収不能", () => {
+  it("infinite payback with a negative cumDelta adds a no-payback caution", () => {
     const out = makeOutput("new-build",
       { cumulativeTotal: 110, annualCo2Reduction: 0, selfConsumptionRate: 0, initialCostDelta: 1_000_000 },
       100, Infinity, 30, 0);
@@ -294,7 +292,7 @@ describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網�
     expect(e.cautions.some((c) => c.includes("回収"))).toBe(true);
   });
 
-  it("CO2 削減限定的かつ target!=baseline で cautions に追加", () => {
+  it("adds a caution for limited CO2 reduction when target != baseline", () => {
     const out = makeOutput("new-build",
       { cumulativeTotal: 90, annualCo2Reduction: 100, selfConsumptionRate: 0 },
       100, 10, 30, 0);
@@ -302,7 +300,7 @@ describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網�
     expect(e.cautions.some((c) => c.includes("CO2"))).toBe(true);
   });
 
-  it("baselineCumulative が 0 でも安全 (Math.max(1, ...))", () => {
+  it("is safe when baselineCumulative is 0 (Math.max(1, ...))", () => {
     const out = makeOutput("new-build",
       { cumulativeTotal: 50, annualCo2Reduction: 0, selfConsumptionRate: 0 },
       0, 5, 30, 0);
@@ -310,7 +308,7 @@ describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網�
     expect(e.score).toBeGreaterThanOrEqual(0);
   });
 
-  it("autonomy: selfConsumptionRate > 1 / solar > 5 をクランプ", () => {
+  it("autonomy clamps selfConsumptionRate > 1 and solar > 5", () => {
     const out = makeOutput("new-build",
       { cumulativeTotal: 90, annualCo2Reduction: 0, selfConsumptionRate: 2 },
       100, 10, 30, 100);
@@ -318,7 +316,7 @@ describe("evaluateResult: 合成 SimulationOutput で全 grade headline を網�
     expect(e.breakdown.autonomy).toBeLessThanOrEqual(15);
   });
 
-  it("autonomy: 負の selfConsumptionRate / 負の solar をクランプ", () => {
+  it("autonomy clamps negative selfConsumptionRate and solar", () => {
     const out = makeOutput("new-build",
       { cumulativeTotal: 90, annualCo2Reduction: 0, selfConsumptionRate: -0.5 },
       100, 10, 30, -5);

@@ -58,7 +58,7 @@ export function calcHotWater(input: HousingInput): HotWaterResult {
   const heatNeededKwh = (baseHeat * 0.7) / 0.85;
   return {
     demandHeatKwh: baseHeat,
-    electricityKwh: -baseHeat * 0.3 / 0.95, // 発電で家庭消費を相殺（マイナスで返す）
+    electricityKwh: -baseHeat * 0.3 / 0.95, // generation offsets household use (returned as a negative value)
     gasM3: heatNeededKwh / GAS_KWH_PER_M3,
   };
 }

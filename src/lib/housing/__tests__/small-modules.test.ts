@@ -43,17 +43,17 @@ function baseInput(overrides: Partial<HousingInput> = {}): HousingInput {
 }
 
 describe("calcSolar", () => {
-  it("太陽光容量 0 は発電量 0", () => {
+  it("zero solar capacity generates nothing", () => {
     expect(calcSolar(baseInput({ solarCapacity: 0 })).annualKwh).toBe(0);
   });
 
-  it("南面が東/西より発電量大", () => {
+  it("south-facing generates more than east/west", () => {
     const south = calcSolar(baseInput({ solarOrientation: "south" })).annualKwh;
     const east = calcSolar(baseInput({ solarOrientation: "east" })).annualKwh;
     expect(south).toBeGreaterThan(east);
   });
 
-  it("南東・南西は中間", () => {
+  it("south-east and south-west are in between", () => {
     const south = calcSolar(baseInput({ solarOrientation: "south" })).annualKwh;
     const sw = calcSolar(baseInput({ solarOrientation: "south-west" })).annualKwh;
     const se = calcSolar(baseInput({ solarOrientation: "south-east" })).annualKwh;
@@ -63,7 +63,7 @@ describe("calcSolar", () => {
     expect(se).toBe(sw); // Both 0.96
   });
 
-  it("傾斜 30° が最大付近、0° と 90° は減少", () => {
+  it("a 30° tilt is near the peak; 0° and 90° generate less", () => {
     const tilt0  = calcSolar(baseInput({ solarTilt: 0 })).annualKwh;
     const tilt30 = calcSolar(baseInput({ solarTilt: 30 })).annualKwh;
     const tilt90 = calcSolar(baseInput({ solarTilt: 90 })).annualKwh;
@@ -71,12 +71,12 @@ describe("calcSolar", () => {
     expect(tilt30).toBeGreaterThan(tilt90);
   });
 
-  it("傾斜 30° 超 (例 60°) でも 0 < tiltFactor < 1.1", () => {
+  it("tilts above 30° (e.g. 60°) keep 0 < tiltFactor < 1.1", () => {
     const v = calcSolar(baseInput({ solarTilt: 60 })).annualKwh;
     expect(v).toBeGreaterThan(0);
   });
 
-  it("地域 1 (寒冷) より地域 8 (温暖) のほうが発電量大", () => {
+  it("region 8 (warm) generates more than region 1 (cold)", () => {
     const r1 = calcSolar(baseInput({ region: 1 })).annualKwh;
     const r8 = calcSolar(baseInput({ region: 8 })).annualKwh;
     expect(r8).toBeGreaterThan(r1);
@@ -84,17 +84,17 @@ describe("calcSolar", () => {
 });
 
 describe("calcSelfConsumption", () => {
-  it("太陽光なしは self-consumption 0", () => {
+  it("no solar means zero self-consumption", () => {
     expect(calcSelfConsumption(baseInput({ solarCapacity: 0 })).selfConsumptionRate).toBe(0);
   });
 
-  it("夕方在宅 < 終日在宅", () => {
+  it("evening presence < all-day presence", () => {
     const ev = calcSelfConsumption(baseInput({ presence: "evening-only" })).selfConsumptionRate;
     const ad = calcSelfConsumption(baseInput({ presence: "all-day" })).selfConsumptionRate;
     expect(ad).toBeGreaterThan(ev);
   });
 
-  it("蓄電池容量が増えると self-consumption も増える (漸近)", () => {
+  it("more battery capacity raises self-consumption (asymptotically)", () => {
     const b0  = calcSelfConsumption(baseInput({ batteryCapacity: 0 })).selfConsumptionRate;
     const b5  = calcSelfConsumption(baseInput({ batteryCapacity: 5 })).selfConsumptionRate;
     const b15 = calcSelfConsumption(baseInput({ batteryCapacity: 15 })).selfConsumptionRate;
@@ -102,20 +102,20 @@ describe("calcSelfConsumption", () => {
     expect(b15).toBeGreaterThan(b5);
   });
 
-  it("HEMS あり: 自家消費 +0.05", () => {
+  it("HEMS adds 0.05 to self-consumption", () => {
     const a = calcSelfConsumption(baseInput({ hems: false })).selfConsumptionRate;
     const b = calcSelfConsumption(baseInput({ hems: true })).selfConsumptionRate;
     expect(b).toBeCloseTo(a + 0.05, 5);
   });
 
-  it("0.95 上限でクランプ", () => {
+  it("clamps at 0.95", () => {
     const r = calcSelfConsumption(
       baseInput({ presence: "all-day", batteryCapacity: 50, hems: true })
     );
     expect(r.selfConsumptionRate).toBeLessThanOrEqual(0.95);
   });
 
-  it("負の蓄電池容量は 0 として扱う", () => {
+  it("treats negative battery capacity as 0", () => {
     const r = calcSelfConsumption(baseInput({ batteryCapacity: -5 }));
     // batteryUplift(-5) should be 0. Can be judged from base alone
     expect(r.selfConsumptionRate).toBeGreaterThan(0);
@@ -123,58 +123,58 @@ describe("calcSelfConsumption", () => {
 });
 
 describe("calcAnnualCo2", () => {
-  it("両方 0 → 0", () => {
+  it("returns 0 when both are 0", () => {
     expect(calcAnnualCo2(0, 0)).toBe(0);
   });
-  it("電気のみで概ね正", () => {
+  it("is positive with electricity only", () => {
     expect(calcAnnualCo2(1000, 0)).toBeGreaterThan(0);
   });
-  it("ガスのみで概ね正", () => {
+  it("is positive with gas only", () => {
     expect(calcAnnualCo2(0, 100)).toBeGreaterThan(0);
   });
-  it("単調加算", () => {
+  it("adds monotonically", () => {
     expect(calcAnnualCo2(1000, 100)).toBe(calcAnnualCo2(1000, 0) + calcAnnualCo2(0, 100));
   });
 });
 
 describe("matchSubsidies / totalSubsidyAmount", () => {
-  it("デフォルト入力では蓄電池補助金 (要件なし) はマッチ", () => {
+  it("the battery subsidy (no requirements) matches the default input", () => {
     const r = matchSubsidies(baseInput({ solarCapacity: 0 }));
     expect(r.find((s) => s.id === "battery-doe")).toBeDefined();
   });
 
-  it("断熱要件 (ZEH 以上)・太陽光要件あり → 一致", () => {
+  it("matches when the insulation (ZEH or better) and solar requirements are met", () => {
     const r = matchSubsidies(baseInput({ insulationPreset: "zeh", solarCapacity: 5 }));
     expect(r.find((s) => s.id === "zeh")).toBeDefined();
   });
 
-  it("ZEH 断熱だが太陽光なし → zeh 補助金は除外", () => {
+  it("excludes the zeh subsidy with ZEH insulation but no solar", () => {
     const r = matchSubsidies(baseInput({ insulationPreset: "zeh", solarCapacity: 0 }));
     expect(r.find((s) => s.id === "zeh")).toBeUndefined();
   });
 
-  it("HEAT20-G1 で kodomo-eco がマッチ", () => {
+  it("kodomo-eco matches with HEAT20-G1", () => {
     const r = matchSubsidies(baseInput({ insulationPreset: "heat20-g1" }));
     expect(r.find((s) => s.id === "kodomo-eco")).toBeDefined();
   });
 
-  it("custom は ランク 0 → 高ランク要件補助金は除外", () => {
+  it("custom has rank 0, so high-rank subsidies are excluded", () => {
     const r = matchSubsidies(baseInput({ insulationPreset: "custom" }));
     expect(r.find((s) => s.id === "kodomo-eco")).toBeUndefined();
   });
 
-  it("totalSubsidyAmount: 適用 ID の amount を合計", () => {
+  it("totalSubsidyAmount sums the applied IDs", () => {
     const input = baseInput({ insulationPreset: "heat20-g2", solarCapacity: 5 });
     const total = totalSubsidyAmount(input, ["zeh", "kodomo-eco", "long-life", "battery-doe"]);
     // All are applied (G2 ranks above zeh)
     expect(total).toBe(550_000 + 800_000 + 1_000_000 + 200_000);
   });
 
-  it("ids が空配列ならゼロ", () => {
+  it("returns zero for empty ids", () => {
     expect(totalSubsidyAmount(baseInput(), [])).toBe(0);
   });
 
-  it("ids にマッチしない補助金が含まれてもエラーにならない", () => {
+  it("ignores unknown ids without throwing", () => {
     expect(totalSubsidyAmount(baseInput(), ["nonexistent"])).toBe(0);
   });
 });
@@ -186,19 +186,19 @@ describe("presets: build*Scenario", () => {
     expect(s.input.windowSpec).toBe("resin-pair-lowe");
   });
 
-  it("buildHighPerformanceSolarBatteryScenario: 太陽光 5kW + 蓄電池 7kWh + HEMS", () => {
+  it("buildHighPerformanceSolarBatteryScenario: 5 kW solar + 7 kWh battery + HEMS", () => {
     const s = buildHighPerformanceSolarBatteryScenario(baseInput());
     expect(s.input.solarCapacity).toBe(5);
     expect(s.input.batteryCapacity).toBe(7);
     expect(s.input.hems).toBe(true);
   });
 
-  it("buildUserScenario: 入力そのまま", () => {
+  it("buildUserScenario keeps the input as is", () => {
     const input = baseInput({ uaValue: 0.42 });
     expect(buildUserScenario(input).input.uaValue).toBe(0.42);
   });
 
-  it("buildRenovationAsIsScenario: 既存仕様で太陽光ゼロ", () => {
+  it("buildRenovationAsIsScenario uses the existing spec with no solar", () => {
     const input = baseInput({
       mode: "renovation",
       renovation: {
@@ -218,16 +218,16 @@ describe("presets: build*Scenario", () => {
     expect(s.input.renovation).toBeUndefined();
   });
 
-  it("buildRenovationAsIsScenario: renovation 無しは user に fallback", () => {
+  it("buildRenovationAsIsScenario falls back to user without renovation", () => {
     const s = buildRenovationAsIsScenario(baseInput()); // mode: new-build, renovation undefined
     expect(s.id).toBe("user");
   });
 
-  it("buildAllScenarios: 新築モードで 4 シナリオ", () => {
+  it("buildAllScenarios returns 4 scenarios in new-build mode", () => {
     expect(buildAllScenarios(baseInput())).toHaveLength(4);
   });
 
-  it("buildAllScenarios: リフォームモードで 2 シナリオ", () => {
+  it("buildAllScenarios returns 2 scenarios in renovation mode", () => {
     const input = baseInput({
       mode: "renovation",
       renovation: {
@@ -244,14 +244,14 @@ describe("presets: build*Scenario", () => {
     expect(buildAllScenarios(input)).toHaveLength(2);
   });
 
-  it("defaultRenovationInput: renovation 未設定なら 1980-1999 既定 + 6 地域 UA", () => {
+  it("defaultRenovationInput defaults to 1980-1999 with the region-6 UA", () => {
     const r = defaultRenovationInput(baseInput({ region: 6 }));
     expect(r.ageBracket).toBe("1980-1999");
     expect(r.remainingYears).toBe(20);
     expect(r.existingHeating).toBe("ac-only");
   });
 
-  it("defaultRenovationInput: 既存値は維持", () => {
+  it("defaultRenovationInput keeps existing values", () => {
     const r = defaultRenovationInput(
       baseInput({
         renovation: {
@@ -272,7 +272,7 @@ describe("presets: build*Scenario", () => {
     expect(r.items).toEqual(["external-insulation"]);
   });
 
-  it("custom 断熱プリセット: applyInsulation は input をそのまま返す", () => {
+  it("applyInsulation returns the input unchanged for the custom preset", () => {
     const input = baseInput({ insulationPreset: "custom", uaValue: 0.33 });
     const s = buildHighPerformanceScenario(input);
     // applyInsulation(_, 'heat20-g2') runs, so uaValue is overwritten with the g2 value
@@ -280,8 +280,8 @@ describe("presets: build*Scenario", () => {
   });
 });
 
-describe("subsidy: 未知 preset の rank フォールバック", () => {
-  it("カスタム以外の未知値は ?? 0 で扱われる", () => {
+describe("subsidy: rank falls back for an unknown preset", () => {
+  it("unknown non-custom values fall back to 0", () => {
     // Passing a preset not in INSULATION_RANK does not crash
     const r = matchSubsidies({
       ...baseInput(),
@@ -292,8 +292,8 @@ describe("subsidy: 未知 preset の rank フォールバック", () => {
   });
 });
 
-describe("battery: 太陽光ゼロ周辺の分岐", () => {
-  it("solarCapacity が負の値でも 0 として早期 return", () => {
+describe("battery: branches around zero solar", () => {
+  it("returns early with 0 for negative solarCapacity", () => {
     expect(calcSelfConsumption(baseInput({ solarCapacity: -1 })).selfConsumptionRate).toBe(0);
   });
 });
