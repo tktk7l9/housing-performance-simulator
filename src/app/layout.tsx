@@ -91,8 +91,8 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: TITLE,
   },
-  // app/icon.svg, app/apple-icon.svg, app/opengraph-image.tsx は
-  // Next.js のファイル規約により自動的にメタデータへ反映される。
+  // app/icon.svg, app/apple-icon.tsx and app/opengraph-image.tsx are added to
+  // the metadata automatically by Next.js file conventions.
 };
 
 export default function RootLayout({

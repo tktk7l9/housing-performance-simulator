@@ -32,8 +32,8 @@ function baseInput(overrides: Partial<HousingInput> = {}): HousingInput {
   };
 }
 
-describe("runSimulation: 新築モード基本ケース", () => {
-  it("buildAllScenarios で 4 シナリオ + baseline 同一", () => {
+describe("runSimulation: new-build mode", () => {
+  it("buildAllScenarios gives 4 scenarios and the same baseline", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     // baseline is not duplicated, so it stays at 4 scenarios
@@ -41,39 +41,39 @@ describe("runSimulation: 新築モード基本ケース", () => {
     expect(out.baselineId).toBe("preset-baseline");
   });
 
-  it("scenarios が baseline を含まない場合は自動で先頭に追加される", () => {
+  it("prepends the baseline when scenarios omit it", () => {
     const input = baseInput();
     const out = runSimulation(input, [buildUserScenario(input)]);
     expect(out.scenarios.some((s) => s.scenarioId === "preset-baseline")).toBe(true);
   });
 
-  it("paybackYears: baseline 自身は 0", () => {
+  it("paybackYears: 0 for the baseline itself", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     expect(out.paybackYears["preset-baseline"]).toBe(0);
   });
 
-  it("annualCo2Reduction: baseline は 0 (自分との差)", () => {
+  it("annualCo2Reduction: 0 for the baseline (diff with itself)", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     const baseline = out.scenarios.find((s) => s.scenarioId === "preset-baseline")!;
     expect(baseline.annualCo2Reduction).toBe(0);
   });
 
-  it("高性能 + 太陽光 + 蓄電池はベースより年間 CO2 が小さい (削減量プラス)", () => {
+  it("high performance + solar + battery emits less CO2 than the baseline", () => {
     const input = baseInput();
     const out = runSimulation(input, buildAllScenarios(input));
     const eco = out.scenarios.find((s) => s.scenarioId === "preset-high-perf-solar-battery")!;
     expect(eco.annualCo2Reduction).toBeGreaterThan(0);
   });
 
-  it("yearly はちょうど livingYears 年分のエントリ", () => {
+  it("yearly has exactly livingYears entries", () => {
     const input = baseInput({ livingYears: 25 });
     const out = runSimulation(input, buildAllScenarios(input));
     for (const s of out.scenarios) expect(s.yearly).toHaveLength(25);
   });
 
-  it("yearly の各 cumulative は単調増加（負キャッシュフローでなければ）", () => {
+  it("yearly cumulative increases monotonically (without negative cash flow)", () => {
     const input = baseInput({ livingYears: 10 });
     const out = runSimulation(input, buildAllScenarios(input));
     for (const s of out.scenarios) {
@@ -83,20 +83,20 @@ describe("runSimulation: 新築モード基本ケース", () => {
     }
   });
 
-  it("livingYears=0 でも 1 年は計算する (最低保証)", () => {
+  it("computes at least one year when livingYears=0", () => {
     const input = baseInput({ livingYears: 0 });
     const out = runSimulation(input, buildAllScenarios(input));
     for (const s of out.scenarios) expect(s.yearly.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("太陽光余剰: 余剰が発生 (大型 12kW + 蓄電池小) で sellRevenue > 0", () => {
+  it("solar surplus (12 kW with a small battery) gives sellRevenue > 0", () => {
     const input = baseInput({ solarCapacity: 12, batteryCapacity: 0 });
     const out = runSimulation(input, [buildUserScenario(input)]);
     const user = out.scenarios.find((s) => s.scenarioId === "user")!;
     expect(user.firstYearSellRevenue).toBeGreaterThan(0);
   });
 
-  it("エネファーム: 給湯がマイナス電力 → buyKwh が削減される", () => {
+  it("ENE-FARM: negative hot-water power reduces buyKwh", () => {
     const a = baseInput({ waterHeater: "eco-cute" });
     const b = baseInput({ waterHeater: "ene-farm" });
     const outA = runSimulation(a, [buildUserScenario(a)]);
@@ -108,7 +108,7 @@ describe("runSimulation: 新築モード基本ケース", () => {
     expect(userA.annualHotWaterGas).toBe(0);
   });
 
-  it("ガス給湯時は annualHotWaterKwh=0", () => {
+  it("gas water heater gives annualHotWaterKwh=0", () => {
     const input = baseInput({ waterHeater: "gas" });
     const out = runSimulation(input, [buildUserScenario(input)]);
     const user = out.scenarios.find((s) => s.scenarioId === "user")!;
@@ -116,7 +116,7 @@ describe("runSimulation: 新築モード基本ケース", () => {
     expect(user.annualHotWaterGas).toBeGreaterThan(0);
   });
 
-  it("FIT期間後 (year >= 10) は卒FIT単価適用", () => {
+  it("applies the post-FIT (卒FIT) price after the FIT period (year >= 10)", () => {
     const input = baseInput({ solarCapacity: 5, livingYears: 15, sellPriceFit: 20, sellPricePostFit: 5 });
     const out = runSimulation(input, [buildUserScenario(input)]);
     const user = out.scenarios.find((s) => s.scenarioId === "user")!;
@@ -124,34 +124,34 @@ describe("runSimulation: 新築モード基本ケース", () => {
     expect(user.yearly[11].energyCost).not.toBe(user.yearly[0].energyCost);
   });
 
-  it("HEMS: 他家電消費 5%減 で初期費用増", () => {
+  it("HEMS cuts other appliance use by 5% and raises initial cost", () => {
     const input = baseInput({ hems: true });
     const out = runSimulation(input, [buildUserScenario(input)]);
     const user = out.scenarios.find((s) => s.scenarioId === "user")!;
     expect(user.initialCostGross).toBeGreaterThan(0);
   });
 
-  it("payback=0 分岐: user 仕様 = baseline 仕様 + 補助金で初年度から低コスト", () => {
+  it("payback=0 when the user spec equals the baseline plus a subsidy", () => {
     // With the user scenario set to the same spec as baseline and a subsidy applied,
     // initial cost (baseline - subsidy) < baseline initial cost -> payback=0
     const input = baseInput({
-      appliedSubsidyIds: ["battery-doe"], // 200,000円 補助金、要件なし
+      appliedSubsidyIds: ["battery-doe"], // 200,000 yen subsidy with no requirements
     });
     const out = runSimulation(input, [
       buildBaselineScenario(input),
-      buildUserScenario(input), // baseline と同じ仕様だが appliedSubsidyIds は適用される
+      buildUserScenario(input), // same spec as the baseline, but appliedSubsidyIds apply
     ]);
     expect(out.paybackYears["user"]).toBe(0);
   });
 
-  it("assumptions スナップショットが返る", () => {
+  it("returns the assumptions snapshot", () => {
     const out = runSimulation(baseInput(), buildAllScenarios(baseInput()));
     expect(out.assumptions.fitYears).toBe(10);
     expect(out.assumptions.solarLossFactor).toBeGreaterThan(0);
   });
 });
 
-describe("runSimulation: リフォームモード", () => {
+describe("runSimulation: renovation mode", () => {
   const renoInput = (overrides: Partial<HousingInput> = {}): HousingInput =>
     baseInput({
       mode: "renovation",
@@ -168,20 +168,20 @@ describe("runSimulation: リフォームモード", () => {
       ...overrides,
     });
 
-  it("baselineId は renovation-as-is", () => {
+  it("baselineId is renovation-as-is", () => {
     const input = renoInput();
     const out = runSimulation(input, buildAllScenarios(input));
     expect(out.baselineId).toBe("renovation-as-is");
   });
 
-  it("renovation-applied: ベースよりUAが改善され annualCo2Reduction > 0 か = 0", () => {
+  it("renovation-applied improves UA, so annualCo2Reduction >= 0", () => {
     const input = renoInput();
     const out = runSimulation(input, buildAllScenarios(input));
     const applied = out.scenarios.find((s) => s.scenarioId === "renovation-applied")!;
     expect(applied.annualCo2Reduction).toBeGreaterThanOrEqual(0);
   });
 
-  it("窓交換あり → 仕様が resin-pair-lowe にアップグレード", () => {
+  it("window replacement upgrades the spec to resin-pair-lowe", () => {
     const input = renoInput({
       renovation: {
         ageBracket: "1980-1999",
@@ -198,7 +198,7 @@ describe("runSimulation: リフォームモード", () => {
     expect(sc.input.windowSpec).toBe("resin-pair-lowe");
   });
 
-  it("内窓あり → 仕様が resin-pair-lowe にアップグレード", () => {
+  it("inner windows upgrade the spec to resin-pair-lowe", () => {
     const input = renoInput({
       renovation: {
         ageBracket: "1980-1999",
@@ -215,7 +215,7 @@ describe("runSimulation: リフォームモード", () => {
     expect(sc.input.windowSpec).toBe("resin-pair-lowe");
   });
 
-  it("窓系なし → 既存窓仕様を維持", () => {
+  it("keeps the existing window spec without window items", () => {
     const input = renoInput({
       renovation: {
         ageBracket: "1980-1999",
@@ -232,13 +232,13 @@ describe("runSimulation: リフォームモード", () => {
     expect(sc.input.windowSpec).toBe("alum-pair");
   });
 
-  it("renovation オブジェクトなしの applied は user シナリオで代替", () => {
+  it("applied falls back to the user scenario without a renovation object", () => {
     const input = baseInput({ mode: "renovation" }); // renovation unset
     const sc = buildRenovationAppliedScenario(input);
     expect(sc.id).toBe("user");
   });
 
-  it("renovation オブジェクトなしの as-is も user シナリオで代替 (build 段階)", () => {
+  it("as-is also falls back to the user scenario without a renovation object (build stage)", () => {
     // runSimulation fails in this state because there is no baseline, but the build function's behavior can be checked
     const input = baseInput({ mode: "renovation" });
     const scs = buildAllScenarios(input);
@@ -247,15 +247,15 @@ describe("runSimulation: リフォームモード", () => {
   });
 });
 
-describe("preset シナリオの基本属性", () => {
-  it("buildBaselineScenario はメタデータが揃う", () => {
+describe("preset scenarios have the basic attributes", () => {
+  it("buildBaselineScenario fills in the metadata", () => {
     const sc = buildBaselineScenario(baseInput());
     expect(sc.id).toBe("preset-baseline");
     expect(sc.source).toBe("preset");
     expect(sc.input.solarCapacity).toBe(0);
   });
 
-  it("custom insulation preset では UA を変更しない", () => {
+  it("the custom insulation preset leaves UA unchanged", () => {
     const sc = buildBaselineScenario(baseInput({ insulationPreset: "custom", uaValue: 0.66 }));
     // baseline overrides energy-saving so it is irrelevant; the applyInsulation custom path is hit by another scenario
     expect(sc.input.uaValue).toBeDefined();

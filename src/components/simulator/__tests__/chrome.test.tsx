@@ -48,19 +48,19 @@ beforeEach(() => {
 });
 
 describe("SimulatorApp", () => {
-  it("currentStep=0: BuildingStep を表示", () => {
+  it("currentStep=0 shows BuildingStep", () => {
     render(<SimulatorApp />);
     expect(screen.getByRole("heading", { name: "建物条件" })).toBeTruthy();
   });
 
-  it("setStep(1): PerformanceStep へ", () => {
+  it("setStep(1) moves to PerformanceStep", () => {
     render(<SimulatorApp />);
     useHousingStore.setState({ currentStep: 1 });
     render(<SimulatorApp />);
     expect(screen.getAllByText(/性能|断熱/).length).toBeGreaterThan(0);
   });
 
-  it("renovation モード: RenovationStep が出現", () => {
+  it("renovation mode shows RenovationStep", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, mode: "renovation" },
       currentStep: 1,
@@ -69,7 +69,7 @@ describe("SimulatorApp", () => {
     expect(screen.getAllByText(/リフォーム|改修/).length).toBeGreaterThan(0);
   });
 
-  it("step 上限を超えた currentStep でも results を表示", () => {
+  it("shows results when currentStep exceeds the last step", () => {
     useHousingStore.setState({
       currentStep: 99,
     });
@@ -78,19 +78,19 @@ describe("SimulatorApp", () => {
 });
 
 describe("TrailSidebar", () => {
-  it("ステップ名一覧を表示", () => {
+  it("lists the step names", () => {
     render(<TrailSidebar />);
     // All 6 steps are visible
     expect(screen.getAllByRole("button").length).toBeGreaterThan(0);
   });
 
-  it("クリックで currentStep が変わる", () => {
+  it("changes currentStep on click", () => {
     render(<TrailSidebar />);
     fireEvent.click(screen.getByRole("button", { name: /2\. 住宅性能/ }));
     expect(useHousingStore.getState().currentStep).toBe(1);
   });
 
-  it("renovation モードでも描画", () => {
+  it("renders in renovation mode", () => {
     useHousingStore.setState({ input: { ...DEFAULT_INPUT, mode: "renovation" } });
     render(<TrailSidebar />);
     expect(screen.getAllByRole("button").length).toBeGreaterThan(0);
@@ -98,18 +98,18 @@ describe("TrailSidebar", () => {
 });
 
 describe("SaveDialog", () => {
-  it("open=false なら何も描画しない or 不在", () => {
+  it("renders nothing when open=false", () => {
     render(<SaveDialog open={false} onOpenChange={() => {}} />);
     // Dialog text is not shown
     expect(screen.queryByText(/保存名|保存$/)).toBeNull();
   });
 
-  it("open=true で表示", () => {
+  it("renders when open=true", () => {
     render(<SaveDialog open onOpenChange={() => {}} />);
     expect(screen.getAllByText(/保存/).length).toBeGreaterThan(0);
   });
 
-  it("名前を入力して保存ボタン押下で saveCurrent 呼び出し", () => {
+  it("calls saveCurrent after entering a name and pressing save", () => {
     const onOpenChange = vi.fn();
     render(<SaveDialog open onOpenChange={onOpenChange} />);
     const inputs = screen.getAllByRole("textbox");
@@ -123,13 +123,13 @@ describe("SaveDialog", () => {
 });
 
 describe("SavedList", () => {
-  it("保存ゼロ件: 空メッセージ or ボタンのみ", () => {
+  it("with no saves, shows the empty message or only the button", () => {
     render(<SavedList />);
     // Some saved-list UI is visible
     expect(document.body.children.length).toBeGreaterThan(0);
   });
 
-  it("保存 1件あれば名前表示", () => {
+  it("shows the name when one save exists", () => {
     useHousingStore.setState({
       savedSimulations: [{
         id: "sim_1",

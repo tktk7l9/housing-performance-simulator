@@ -35,27 +35,27 @@ function baseInput(overrides: Partial<HousingInput> = {}): HousingInput {
 }
 
 describe("calcHeatLoad", () => {
-  it("断熱が良くなれば（UA小）熱負荷が下がる", () => {
+  it("better insulation (lower UA) lowers the heat load", () => {
     const poor = calcHeatLoad(baseInput({ uaValue: 0.87 }));
     const good = calcHeatLoad(baseInput({ uaValue: 0.46 }));
     expect(good.heatingLoadKwh).toBeLessThan(poor.heatingLoadKwh);
     expect(good.coolingLoadKwh).toBeLessThan(poor.coolingLoadKwh);
   });
 
-  it("寒冷地（region 1）は温暖地（region 6）より暖房負荷が大きい", () => {
+  it("a cold region (1) has a larger heating load than a warm one (6)", () => {
     const cold = calcHeatLoad(baseInput({ region: 1 }));
     const warm = calcHeatLoad(baseInput({ region: 6 }));
     expect(cold.heatingLoadKwh).toBeGreaterThan(warm.heatingLoadKwh);
   });
 
-  it("床面積に概ね比例", () => {
+  it("scales roughly with floor area", () => {
     const small = calcHeatLoad(baseInput({ floorArea: 80 }));
     const large = calcHeatLoad(baseInput({ floorArea: 160 }));
     // 160/80 = exactly 2.0x
     expect(large.heatingLoadKwh / small.heatingLoadKwh).toBeCloseTo(2.0, 5);
   });
 
-  it("totalEnergyKwh は heating/cooling 負荷 ÷ COP の合計", () => {
+  it("totalEnergyKwh is the sum of heating/cooling load divided by COP", () => {
     const r = calcHeatLoad(baseInput({ heating: "ac-only" }));
     // ac-only: copHeating=4.5, copCooling=5.5
     const expected = r.heatingLoadKwh / 4.5 + r.coolingLoadKwh / 5.5;
@@ -64,25 +64,25 @@ describe("calcHeatLoad", () => {
 });
 
 describe("calcHotWater", () => {
-  it("エコキュート: ガスはゼロ・電力は正", () => {
+  it("EcoCute (エコキュート): zero gas, positive electricity", () => {
     const r = calcHotWater(baseInput({ waterHeater: "eco-cute" }));
     expect(r.gasM3).toBe(0);
     expect(r.electricityKwh).toBeGreaterThan(0);
   });
 
-  it("ガス給湯: ガス消費は正・電力は 0", () => {
+  it("gas water heater: positive gas, zero electricity", () => {
     const r = calcHotWater(baseInput({ waterHeater: "gas" }));
     expect(r.gasM3).toBeGreaterThan(0);
     expect(r.electricityKwh).toBe(0);
   });
 
-  it("エネファーム: 電力は負（家庭消費を相殺）", () => {
+  it("ENE-FARM: negative electricity (offsets household use)", () => {
     const r = calcHotWater(baseInput({ waterHeater: "ene-farm" }));
     expect(r.electricityKwh).toBeLessThan(0);
     expect(r.gasM3).toBeGreaterThan(0);
   });
 
-  it("世帯人数が増えると総需要熱量も増える（規模逓減があっても）", () => {
+  it("more household members raise total heat demand (despite diminishing scale)", () => {
     const solo = calcHotWater(baseInput({ household: 1 }));
     const fam  = calcHotWater(baseInput({ household: 4 }));
     expect(fam.demandHeatKwh).toBeGreaterThan(solo.demandHeatKwh);
@@ -90,14 +90,14 @@ describe("calcHotWater", () => {
 });
 
 describe("calcInitialCost", () => {
-  it("HEMS なし vs あり: HEMS分だけ total が増える", () => {
+  it("HEMS adds exactly its own cost to the total", () => {
     const noHems   = calcInitialCost(baseInput({ hems: false }));
     const withHems = calcInitialCost(baseInput({ hems: true }));
     expect(withHems.total - noHems.total).toBe(withHems.hems);
     expect(withHems.hems).toBeGreaterThan(0);
   });
 
-  it("太陽光 0 → 5kW で solar 費用が線形に増える", () => {
+  it("solar cost grows linearly from 0 to 5 kW", () => {
     const zero  = calcInitialCost(baseInput({ solarCapacity: 0 }));
     const five  = calcInitialCost(baseInput({ solarCapacity: 5 }));
     expect(zero.solar).toBe(0);
@@ -106,7 +106,7 @@ describe("calcInitialCost", () => {
     expect(five.solar).toBeCloseTo(five.solar, 5);
   });
 
-  it("リフォームモードでは insulation/waterHeater/heating は 0", () => {
+  it("renovation mode has zero insulation, waterHeater and heating cost", () => {
     const r = calcInitialCost(
       baseInput({
         mode: "renovation",
@@ -128,7 +128,7 @@ describe("calcInitialCost", () => {
     expect(r.renovation).toBeGreaterThan(0);
   });
 
-  it("内訳の合計は total と一致", () => {
+  it("the breakdown sums to the total", () => {
     const r = calcInitialCost(baseInput({ solarCapacity: 5, batteryCapacity: 10, hems: true }));
     const sum =
       r.insulation + r.renovation + r.solar + r.battery +
@@ -138,11 +138,11 @@ describe("calcInitialCost", () => {
 });
 
 describe("calcRenovationCost", () => {
-  it("renovation 未設定なら 0", () => {
+  it("returns 0 without renovation", () => {
     expect(calcRenovationCost(baseInput())).toBe(0);
   });
 
-  it("lumpSum 単位の項目 (airtight-improvement) も計上される", () => {
+  it("counts lumpSum items (airtight-improvement)", () => {
     const cost = calcRenovationCost(
       baseInput({
         mode: "renovation",
@@ -159,7 +159,7 @@ describe("calcRenovationCost", () => {
     expect(cost).toBe(350_000);
   });
 
-  it("perOpening 単位の項目 (inner-window) も計上される", () => {
+  it("counts perOpening items (inner-window)", () => {
     const cost = calcRenovationCost(
       baseInput({
         floorArea: 120, // estimateOpenings(120)=14
@@ -177,7 +177,7 @@ describe("calcRenovationCost", () => {
     expect(cost).toBe(80000 * 14);
   });
 
-  it("項目数が増えれば費用も増える（同条件下）", () => {
+  it("more items cost more under the same conditions", () => {
     const one = calcRenovationCost(
       baseInput({
         mode: "renovation",
@@ -209,7 +209,7 @@ describe("calcRenovationCost", () => {
 });
 
 describe("sanitizeInput", () => {
-  it("空入力で安全な既定値が埋まる", () => {
+  it("fills safe defaults for empty input", () => {
     const r = sanitizeInput({});
     expect(r.mode).toBe("new-build");
     expect(r.floorArea).toBeGreaterThanOrEqual(30);
@@ -218,32 +218,32 @@ describe("sanitizeInput", () => {
     expect(r.region).toBeLessThanOrEqual(8);
   });
 
-  it("数値はクランプ範囲に収まる（floorArea 上下限）", () => {
+  it("clamps numbers to their range (floorArea bounds)", () => {
     expect(sanitizeInput({ floorArea: 5 }).floorArea).toBe(30);
     expect(sanitizeInput({ floorArea: 9999 }).floorArea).toBe(500);
   });
 
-  it("不正な enum はフォールバック値に戻る", () => {
+  it("falls back for invalid enums", () => {
     expect(sanitizeInput({ mode: "INVALID" }).mode).toBe("new-build");
     expect(sanitizeInput({ region: 99 }).region).toBe(6);
     expect(sanitizeInput({ insulationPreset: "WRONG" }).insulationPreset).toBe("energy-saving");
   });
 
-  it("数値文字列は数値として受理される", () => {
+  it("accepts numeric strings as numbers", () => {
     expect(sanitizeInput({ floorArea: "120" }).floorArea).toBe(120);
   });
 
-  it("NaN/Infinity は既定値に戻る", () => {
+  it("resets NaN/Infinity to defaults", () => {
     expect(sanitizeInput({ floorArea: NaN }).floorArea).toBe(120);
     expect(sanitizeInput({ floorArea: Infinity }).floorArea).toBe(120);
   });
 
-  it("appliedSubsidyIds は最大 32 件に制限・空文字除去", () => {
+  it("limits appliedSubsidyIds to 32 and drops empty strings", () => {
     const ids = Array.from({ length: 50 }, (_, i) => `id-${i}`);
     expect(sanitizeInput({ appliedSubsidyIds: [...ids, "", "  "] }).appliedSubsidyIds).toHaveLength(32);
   });
 
-  it("renovation の不正 item は捨てられ、重複も除去される", () => {
+  it("drops invalid and duplicate renovation items", () => {
     const r = sanitizeInput({
       mode: "renovation",
       renovation: {
@@ -255,7 +255,7 @@ describe("sanitizeInput", () => {
 });
 
 describe("migrateInput", () => {
-  it("migrateInput は sanitizeInput と同じ結果 (現状は委譲のみ)", async () => {
+  it("migrateInput matches sanitizeInput (it only delegates for now)", async () => {
     const { migrateInput } = await import("../schema");
     const r = migrateInput({ floorArea: 130, region: 5 });
     expect(r.floorArea).toBe(130);
@@ -264,7 +264,7 @@ describe("migrateInput", () => {
 });
 
 describe("envelope", () => {
-  it("makeEnvelope → unwrapEnvelope ラウンドトリップで同等の入力が復元できる", () => {
+  it("makeEnvelope -> unwrapEnvelope round-trips the input", () => {
     const input = baseInput({ floorArea: 110, region: 4 });
     const env = makeEnvelope(input);
     expect(env.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
@@ -273,14 +273,14 @@ describe("envelope", () => {
     expect(restored?.region).toBe(4);
   });
 
-  it("schemaVersion なしの素データも v1 として受理される", () => {
+  it("accepts bare data without schemaVersion as v1", () => {
     const r = unwrapEnvelope({ floorArea: 100, region: 5 });
     expect(r).not.toBeNull();
     expect(r?.floorArea).toBe(100);
     expect(r?.region).toBe(5);
   });
 
-  it("null や非オブジェクトは null を返す", () => {
+  it("returns null for null and non-objects", () => {
     expect(unwrapEnvelope(null)).toBeNull();
     expect(unwrapEnvelope("str")).toBeNull();
     expect(unwrapEnvelope(42)).toBeNull();

@@ -28,26 +28,26 @@ vi.mock("next/link", () => ({
 }));
 
 describe("simulator/page metadata", () => {
-  it("title=シミュレーター", () => {
+  it("sets the simulator page title", () => {
     expect(simMetadata.title).toBe("シミュレーター");
   });
 });
 
 describe("share/[token]/page metadata", () => {
-  it("title=共有された結果", () => {
+  it("sets the shared-result page title", () => {
     expect(shareMetadata.title).toBe("共有された結果");
   });
 });
 
 describe("SharedView", () => {
-  it("有効な token で hydrate → replace", () => {
+  it("hydrates from a valid token, then replaces the URL", () => {
     const token = encodeInput(DEFAULT_INPUT);
     render(<SharedView token={token} />);
     expect(screen.getByText(/共有された入力を読み込んで/)).toBeTruthy();
     expect(replace).toHaveBeenCalledWith("/simulator");
   });
 
-  it("無効な token でも /simulator に redirect", () => {
+  it("redirects to /simulator even for an invalid token", () => {
     render(<SharedView token="invalid!!!" />);
     expect(replace).toHaveBeenCalledWith("/simulator");
   });

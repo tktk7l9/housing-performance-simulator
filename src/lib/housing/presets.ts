@@ -144,8 +144,8 @@ export function buildRenovationAppliedScenario(input: HousingInput): Scenario {
       uaValue: Number(ua.toFixed(2)),
       cValue: Number(c.toFixed(1)),
       windowSpec: upgradeWindow ? "resin-pair-lowe" : r.existingWindow,
-      // 設備系はユーザーが設備ステップで指定したもの（input 側）を維持
-      // リフォーム費用は calculator が renovation オブジェクトから計上する
+      // Equipment keeps what the user chose on the equipment step (from input).
+      // The calculator adds renovation costs from the renovation object.
     },
   };
 }

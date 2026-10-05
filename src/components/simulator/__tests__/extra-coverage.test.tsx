@@ -50,7 +50,7 @@ beforeEach(() => {
 });
 
 describe("BuildingStep additional interactions", () => {
-  it("addressPrefecture 設定で setAddress 経由 region 更新", () => {
+  it("setting addressPrefecture updates region via setAddress", () => {
     render(<BuildingStep onNext={() => {}} />);
     // Radix Select does not fully work in jsdom, so call setAddress directly
     act(() => {
@@ -60,7 +60,7 @@ describe("BuildingStep additional interactions", () => {
     expect(useHousingStore.getState().input.region).toBeLessThanOrEqual(2);
   });
 
-  it("setAddress(undefined) で都道府県解除", () => {
+  it("setAddress(undefined) clears the prefecture", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, addressPrefecture: "東京都", addressCity: "八王子市" },
     });
@@ -72,7 +72,7 @@ describe("BuildingStep additional interactions", () => {
     expect(useHousingStore.getState().input.addressCity).toBeUndefined();
   });
 
-  it("setAddress(prefecture, city) でハイブリッド設定", () => {
+  it("setAddress(prefecture, city) sets both", () => {
     render(<BuildingStep onNext={() => {}} />);
     act(() => {
       useHousingStore.getState().setAddress("北海道", "札幌市");
@@ -80,7 +80,7 @@ describe("BuildingStep additional interactions", () => {
     expect(useHousingStore.getState().input.addressCity).toBe("札幌市");
   });
 
-  it("addressPrefecture セット後の城市候補ヒント", () => {
+  it("shows the city hint after addressPrefecture is set", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, addressPrefecture: "東京都" },
     });
@@ -93,7 +93,7 @@ describe("BuildingStep additional interactions", () => {
 });
 
 describe("PerformanceStep additional", () => {
-  it("UAValue 入力で insulationPreset → custom", () => {
+  it("entering UAValue switches insulationPreset to custom", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     const ua = screen.getByDisplayValue("0.87") as HTMLInputElement;
     act(() => { fireEvent.change(ua, { target: { value: "0.4" } }); });
@@ -101,7 +101,7 @@ describe("PerformanceStep additional", () => {
     expect(useHousingStore.getState().input.uaValue).toBeCloseTo(0.4);
   });
 
-  it("CValue 入力で custom", () => {
+  it("entering CValue switches to custom", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     const c = screen.getByDisplayValue("5") as HTMLInputElement;
     act(() => { fireEvent.change(c, { target: { value: "1.5" } }); });
@@ -109,7 +109,7 @@ describe("PerformanceStep additional", () => {
     expect(useHousingStore.getState().input.insulationPreset).toBe("custom");
   });
 
-  it("UAValue/CValue: 不正値は反映せず元の値を保つ", () => {
+  it("UAValue/CValue: invalid input keeps the previous value", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     const ua = screen.getByDisplayValue("0.87") as HTMLInputElement;
     act(() => { fireEvent.change(ua, { target: { value: "abc" } }); });
@@ -119,7 +119,7 @@ describe("PerformanceStep additional", () => {
     expect(useHousingStore.getState().input.cValue).toBe(5);
   });
 
-  it("insulationPreset=custom 表示時の hint fallback (energy-saving description)", () => {
+  it("insulationPreset=custom falls back to the energy-saving hint", () => {
     useHousingStore.setState({ input: { ...DEFAULT_INPUT, insulationPreset: "custom" } });
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     // Field hint is rendered (via Field)
@@ -134,7 +134,7 @@ describe("RenovationStep interactions", () => {
     });
   });
 
-  it("existingUa 変更", () => {
+  it("changes existingUa", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     // Default of r.existingUa
     const inputs = screen.getAllByRole("textbox") as HTMLInputElement[];
@@ -143,7 +143,7 @@ describe("RenovationStep interactions", () => {
     expect(useHousingStore.getState().input.renovation?.existingUa).toBeCloseTo(1.5);
   });
 
-  it("existingC: 不正値は反映せず、離れたときに理由を出す", () => {
+  it("existingC: invalid input is not applied and the reason shows on blur", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const inputs = screen.getAllByRole("textbox") as HTMLInputElement[];
     // existingC ranges from about 1 to a few tens
@@ -155,7 +155,7 @@ describe("RenovationStep interactions", () => {
     expect(screen.getByText(/数値を入力してください/)).toBeTruthy();
   });
 
-  it("リフォーム項目のチェックで items 追加→削除", () => {
+  it("checking a renovation item adds then removes it from items", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const checkboxes = screen.getAllByRole("checkbox");
     expect(checkboxes.length).toBeGreaterThan(0);
@@ -165,14 +165,14 @@ describe("RenovationStep interactions", () => {
     expect(useHousingStore.getState().input.renovation?.items.length).toBe(0);
   });
 
-  it("概算合計が描画される", () => {
+  it("renders the estimated total", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     expect(screen.getAllByText(/概算合計/).length).toBeGreaterThan(0);
   });
 });
 
 describe("ScenarioStep interactions", () => {
-  it("通常シナリオのチェックで toggleScenario", () => {
+  it("checking a regular scenario calls toggleScenario", () => {
     render(<ScenarioStep onNext={() => {}} onBack={() => {}} />);
     const boxes = screen.getAllByRole("checkbox");
     // The first one is the baseline (disabled), so toggle the second
@@ -182,14 +182,14 @@ describe("ScenarioStep interactions", () => {
     expect(after).not.toBe(before);
   });
 
-  it("結果を見るボタンで onNext (calculation runs on the results step)", () => {
+  it("the 結果を見る button calls onNext (calculation runs on the results step)", () => {
     const onNext = vi.fn();
     render(<ScenarioStep onNext={onNext} onBack={() => {}} />);
     fireEvent.click(screen.getByText("結果を見る"));
     expect(onNext).toHaveBeenCalled();
   });
 
-  it("renovation モードでも描画", () => {
+  it("renders in renovation mode", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, mode: "renovation" },
       selectedScenarioIds: defaultSelectedScenarios("renovation"),
@@ -199,21 +199,21 @@ describe("ScenarioStep interactions", () => {
 });
 
 describe("EconomyStep additional", () => {
-  it("電気料金: 不正値は反映しない", () => {
+  it("electricity price: invalid input is not applied", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const ePrice = screen.getByDisplayValue("32") as HTMLInputElement;
     act(() => { fireEvent.change(ePrice, { target: { value: "xx" } }); });
     expect(useHousingStore.getState().input.electricityPriceBuy).toBe(32);
   });
 
-  it("ガス料金: 不正値は反映しない", () => {
+  it("gas price: invalid input is not applied", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const gas = screen.getByDisplayValue("200") as HTMLInputElement;
     act(() => { fireEvent.change(gas, { target: { value: "xx" } }); });
     expect(useHousingStore.getState().input.gasPrice).toBe(200);
   });
 
-  it("FIT/卒FIT 売電単価: 不正値は反映しない", () => {
+  it("FIT / post-FIT (卒FIT) sell price: invalid input is not applied", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const fit = screen.getByDisplayValue("15") as HTMLInputElement;
     act(() => { fireEvent.change(fit, { target: { value: "xx" } }); });
@@ -225,7 +225,7 @@ describe("EconomyStep additional", () => {
 });
 
 describe("SaveDialog interactions", () => {
-  it("name 空のまま送信で placeholder が適用される", () => {
+  it("submitting an empty name uses the placeholder", () => {
     const onOpenChange = vi.fn();
     render(<SaveDialog open onOpenChange={onOpenChange} />);
     // The "保存する" (save) button
@@ -235,7 +235,7 @@ describe("SaveDialog interactions", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("キャンセルボタンで onOpenChange(false)", () => {
+  it("the cancel button calls onOpenChange(false)", () => {
     const onOpenChange = vi.fn();
     render(<SaveDialog open onOpenChange={onOpenChange} />);
     const cancel = screen.getByText("キャンセル").closest("button")!;
@@ -244,7 +244,7 @@ describe("SaveDialog interactions", () => {
     expect(useHousingStore.getState().savedSimulations.length).toBe(0);
   });
 
-  it("Dialog 外側 onOpenChange(false) は name をクリアする", () => {
+  it("onOpenChange(false) from outside the dialog clears the name", () => {
     const onOpenChange = vi.fn();
     const { rerender } = render(<SaveDialog open onOpenChange={onOpenChange} />);
     const inputs = screen.getAllByRole("textbox");
@@ -258,7 +258,7 @@ describe("SaveDialog interactions", () => {
     expect((screen.getAllByRole("textbox")[0] as HTMLInputElement).value).toBe("");
   });
 
-  it("renovation モード時の placeholder 表記", () => {
+  it("shows the renovation-mode placeholder", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, mode: "renovation" },
     });
@@ -269,7 +269,7 @@ describe("SaveDialog interactions", () => {
 });
 
 describe("Dialog ui", () => {
-  it("ESC キーで onOpenChange(false)", () => {
+  it("Escape calls onOpenChange(false)", () => {
     const onChange = vi.fn();
     render(
       <Dialog open onOpenChange={onChange} title="t">
@@ -282,7 +282,7 @@ describe("Dialog ui", () => {
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
-  it("バックドロップクリックで onOpenChange(false)", () => {
+  it("clicking the backdrop calls onOpenChange(false)", () => {
     const onChange = vi.fn();
     const { container } = render(
       <Dialog open onOpenChange={onChange}>
@@ -295,7 +295,7 @@ describe("Dialog ui", () => {
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
-  it("open=false で何も描画しない", () => {
+  it("renders nothing when open=false", () => {
     const { container } = render(
       <Dialog open={false} onOpenChange={() => {}}>
         <span>body</span>
@@ -306,7 +306,7 @@ describe("Dialog ui", () => {
 });
 
 describe("Input ui", () => {
-  it("type=number で onFocus が input.select() を呼ぶ", () => {
+  it("type=number: onFocus calls input.select()", () => {
     const onFocus = vi.fn();
     render(<Input type="number" defaultValue="42" onFocus={onFocus} />);
     const el = screen.getByDisplayValue("42") as HTMLInputElement;
@@ -316,7 +316,7 @@ describe("Input ui", () => {
     expect(onFocus).toHaveBeenCalled();
   });
 
-  it("type=number で onWheel が blur を呼ぶ", () => {
+  it("type=number: onWheel calls blur", () => {
     const onWheel = vi.fn();
     render(<Input type="number" defaultValue="3" onWheel={onWheel} />);
     const el = screen.getByDisplayValue("3") as HTMLInputElement;
@@ -327,7 +327,7 @@ describe("Input ui", () => {
     expect(onWheel).toHaveBeenCalled();
   });
 
-  it("type=text で onFocus/onWheel は何もしない (副作用なし)", () => {
+  it("type=text: onFocus/onWheel have no side effects", () => {
     render(<Input type="text" defaultValue="hi" />);
     const el = screen.getByDisplayValue("hi") as HTMLInputElement;
     expect(() => {
@@ -338,7 +338,7 @@ describe("Input ui", () => {
 });
 
 describe("SimulatorApp step transitions", () => {
-  it("setStep 変更で scroll を発火", () => {
+  it("scrolls when the step changes", () => {
     const scrollSpy = vi.fn();
     Object.defineProperty(window, "scrollTo", { value: scrollSpy, writable: true });
     // Mock getBoundingClientRect on the main element to push top far away
@@ -354,14 +354,14 @@ describe("SimulatorApp step transitions", () => {
     Element.prototype.getBoundingClientRect = origRect;
   });
 
-  it("ResultsStep への遷移", () => {
+  it("navigates to ResultsStep", () => {
     useHousingStore.setState({ currentStep: 5 });
     render(<SimulatorApp />);
     // ResultsStep renders the title "結果"
     expect(screen.getAllByText(/結果|総評/).length).toBeGreaterThan(0);
   });
 
-  it("renovation モード: step 1 が RenovationStep", () => {
+  it("renovation mode: step 1 is RenovationStep", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, mode: "renovation" },
       currentStep: 1,
@@ -372,7 +372,7 @@ describe("SimulatorApp step transitions", () => {
 });
 
 describe("SensitivityChart", () => {
-  it("カスタム input でも描画", () => {
+  it("renders with a custom input", () => {
     const custom = { ...DEFAULT_INPUT, solarCapacity: 0, batteryCapacity: 0 };
     expect(() => render(<SensitivityChart input={custom} />)).not.toThrow();
   });

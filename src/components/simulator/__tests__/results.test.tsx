@@ -42,13 +42,13 @@ function getResult() {
 }
 
 describe("EvaluationCard", () => {
-  it("評価結果を表示", () => {
+  it("shows the evaluation", () => {
     const result = getResult();
     render(<EvaluationCard output={result} />);
     expect(screen.getAllByText(/総合評価|スコア|評価|総評/).length).toBeGreaterThan(0);
   });
 
-  it("空シナリオの場合は null 返却で何も描画されない", () => {
+  it("renders nothing for empty scenarios", () => {
     const empty = { ...getResult(), scenarios: [] };
     const { container } = render(<EvaluationCard output={empty} />);
     expect(container.firstChild).toBeNull();
@@ -56,14 +56,14 @@ describe("EvaluationCard", () => {
 });
 
 describe("ScenarioComparison", () => {
-  it("シナリオ表示", () => {
+  it("shows the scenarios", () => {
     const result = getResult();
     expect(() => render(<ScenarioComparison output={result} />)).not.toThrow();
   });
 });
 
 describe("CumulativeCostChart", () => {
-  it("グラフコンテナ描画", () => {
+  it("renders the chart container", () => {
     const result = getResult();
     render(<CumulativeCostChart scenarios={result.scenarios} livingYears={DEFAULT_INPUT.livingYears} />);
     expect(screen.getAllByTestId("rc").length).toBeGreaterThan(0);
@@ -71,7 +71,7 @@ describe("CumulativeCostChart", () => {
 });
 
 describe("AnnualCostBreakdown", () => {
-  it("年間コスト表示", () => {
+  it("shows the annual cost", () => {
     const result = getResult();
     expect(() => render(
       <AnnualCostBreakdown
@@ -85,21 +85,21 @@ describe("AnnualCostBreakdown", () => {
 });
 
 describe("InitialCostBreakdown", () => {
-  it("初期費用内訳表示", () => {
+  it("shows the initial cost breakdown", () => {
     const result = getResult();
     expect(() => render(<InitialCostBreakdown output={result} />)).not.toThrow();
   });
 });
 
 describe("AssumptionsPanel", () => {
-  it("前提値パネル表示", () => {
+  it("shows the assumptions panel", () => {
     const result = getResult();
     expect(() => render(<AssumptionsPanel output={result} />)).not.toThrow();
   });
 });
 
 describe("SensitivityChart", () => {
-  it("感度分析チャート表示", () => {
+  it("shows the sensitivity chart", () => {
     expect(() => render(<SensitivityChart input={DEFAULT_INPUT} />)).not.toThrow();
   });
 });

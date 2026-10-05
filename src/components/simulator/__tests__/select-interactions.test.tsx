@@ -81,7 +81,7 @@ function selects() {
 }
 
 describe("BuildingStep select handlers", () => {
-  it("region 変更で region/uaValue 同期更新", () => {
+  it("changing region updates region and uaValue together", () => {
     render(<BuildingStep onNext={() => {}} />);
     // Around the fourth one is region: value=6
     const regionSel = selects().find((s) => s.value === "6")!;
@@ -89,7 +89,7 @@ describe("BuildingStep select handlers", () => {
     expect(useHousingStore.getState().input.region).toBe(1);
   });
 
-  it("region 変更時 custom preset では uaValue は維持", () => {
+  it("changing region keeps uaValue with the custom preset", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, insulationPreset: "custom", uaValue: 0.5 },
     });
@@ -99,14 +99,14 @@ describe("BuildingStep select handlers", () => {
     expect(useHousingStore.getState().input.uaValue).toBe(0.5);
   });
 
-  it("addressPrefecture 設定で region 自動", () => {
+  it("setting addressPrefecture sets region automatically", () => {
     render(<BuildingStep onNext={() => {}} />);
     const prefSel = selects()[0];
     act(() => { fireEvent.change(prefSel, { target: { value: "北海道" } }); });
     expect(useHousingStore.getState().input.addressPrefecture).toBe("北海道");
   });
 
-  it("addressPrefecture を __none__ に戻すと undefined", () => {
+  it("resetting addressPrefecture to __none__ makes it undefined", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, addressPrefecture: "東京都" },
     });
@@ -116,7 +116,7 @@ describe("BuildingStep select handlers", () => {
     expect(useHousingStore.getState().input.addressPrefecture).toBeUndefined();
   });
 
-  it("addressCity 変更で city セット", () => {
+  it("changing addressCity sets city", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, addressPrefecture: "北海道" },
     });
@@ -132,7 +132,7 @@ describe("BuildingStep select handlers", () => {
     }
   });
 
-  it("addressCity を __none__ にすると undefined", () => {
+  it("setting addressCity to __none__ makes it undefined", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, addressPrefecture: "北海道", addressCity: "札幌市" },
     });
@@ -142,7 +142,7 @@ describe("BuildingStep select handlers", () => {
     expect(useHousingStore.getState().input.addressCity).toBeUndefined();
   });
 
-  it("addressPrefecture 未設定で onCityChange は何もしない (early return)", () => {
+  it("onCityChange does nothing without addressPrefecture (early return)", () => {
     render(<BuildingStep onNext={() => {}} />);
     // The city select is expected to be disabled, but fire change anyway
     const citySel = selects()[1];
@@ -151,7 +151,7 @@ describe("BuildingStep select handlers", () => {
     expect(useHousingStore.getState().input.addressPrefecture).toBeUndefined();
   });
 
-  it("presence セレクト変更", () => {
+  it("changes presence", () => {
     render(<BuildingStep onNext={() => {}} />);
     const presenceSel = selects().find((s) => s.value === "evening-only")!;
     act(() => { fireEvent.change(presenceSel, { target: { value: "all-day" } }); });
@@ -160,7 +160,7 @@ describe("BuildingStep select handlers", () => {
 });
 
 describe("PerformanceStep onPresetChange", () => {
-  it("カスタム以外を選ぶと UA/C 自動セット", () => {
+  it("choosing a non-custom preset sets UA/C automatically", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     const presetSel = selects().find((s) => s.value === "energy-saving")!;
     act(() => { fireEvent.change(presetSel, { target: { value: "heat20-g2" } }); });
@@ -168,7 +168,7 @@ describe("PerformanceStep onPresetChange", () => {
     expect(useHousingStore.getState().input.uaValue).toBeLessThan(0.5);
   });
 
-  it("custom を選ぶと UA/C は維持", () => {
+  it("choosing custom keeps UA/C", () => {
     useHousingStore.setState({
       input: { ...DEFAULT_INPUT, uaValue: 0.9, cValue: 4 },
     });
@@ -180,7 +180,7 @@ describe("PerformanceStep onPresetChange", () => {
     expect(useHousingStore.getState().input.cValue).toBe(4);
   });
 
-  it("windowSpec 変更", () => {
+  it("changes windowSpec", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     const winSel = selects().find((s) => s.value === "alum-resin-pair-lowe")!;
     const opt = Array.from(winSel.options).find((o) => o.value !== "alum-resin-pair-lowe")!;
@@ -190,14 +190,14 @@ describe("PerformanceStep onPresetChange", () => {
 });
 
 describe("EquipmentStep selects", () => {
-  it("solarOrientation 変更", () => {
+  it("changes solarOrientation", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     const sel = selects().find((s) => s.value === "south")!;
     act(() => { fireEvent.change(sel, { target: { value: "south-east" } }); });
     expect(useHousingStore.getState().input.solarOrientation).toBe("south-east");
   });
 
-  it("waterHeater 変更", () => {
+  it("changes waterHeater", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     const sel = selects().find((s) => s.value === "eco-cute")!;
     const opt = Array.from(sel.options).find((o) => o.value !== "eco-cute")!;
@@ -205,7 +205,7 @@ describe("EquipmentStep selects", () => {
     expect(useHousingStore.getState().input.waterHeater).toBe(opt.value);
   });
 
-  it("heating 変更", () => {
+  it("changes heating", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     const sel = selects().find((s) => s.value === "ac-only")!;
     const opt = Array.from(sel.options).find((o) => o.value !== "ac-only")!;
@@ -215,14 +215,14 @@ describe("EquipmentStep selects", () => {
 });
 
 describe("EconomyStep electricityRise", () => {
-  it("electricityRise 変更", () => {
+  it("changes electricityRise", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const sel = selects().find((s) => s.value === "moderate")!;
     act(() => { fireEvent.change(sel, { target: { value: "steep" } }); });
     expect(useHousingStore.getState().input.electricityRise).toBe("steep");
   });
 
-  it("electricityRise: flat 選択", () => {
+  it("electricityRise: selects flat", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const sel = selects().find((s) => s.value === "moderate")!;
     act(() => { fireEvent.change(sel, { target: { value: "flat" } }); });
@@ -237,7 +237,7 @@ describe("RenovationStep selects", () => {
     });
   });
 
-  it("ageBracket 変更で UA/C/window 自動セット", () => {
+  it("changing ageBracket sets UA/C/window automatically", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const sel = selects()[0]; // ageBracket
     const opts = Array.from(sel.options);
@@ -246,7 +246,7 @@ describe("RenovationStep selects", () => {
     expect(useHousingStore.getState().input.renovation?.ageBracket).toBe(other.value);
   });
 
-  it("existingWindow 変更", () => {
+  it("changes existingWindow", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const sels = selects();
     // existingWindow comes around right after ageBracket
@@ -258,7 +258,7 @@ describe("RenovationStep selects", () => {
     expect(useHousingStore.getState().input.renovation?.existingWindow).toBe(other.value);
   });
 
-  it("existingWaterHeater 変更", () => {
+  it("changes existingWaterHeater", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const sels = selects();
     const heaterSel = sels.find((s) =>
@@ -269,7 +269,7 @@ describe("RenovationStep selects", () => {
     expect(useHousingStore.getState().input.renovation?.existingWaterHeater).toBe(other.value);
   });
 
-  it("existingHeating 変更", () => {
+  it("changes existingHeating", () => {
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     const sels = selects();
     const heatingSel = sels.find((s) =>

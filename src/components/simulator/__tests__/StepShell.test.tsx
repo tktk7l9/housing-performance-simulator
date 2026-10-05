@@ -4,7 +4,7 @@ import { StepShell } from "../StepShell";
 import { Field } from "../Field";
 
 describe("StepShell", () => {
-  it("title / description / children / 前へ・次へを描画", () => {
+  it("renders title, description, children and the back/next buttons", () => {
     render(
       <StepShell title="タイトル" description="説明" onBack={() => {}} onNext={() => {}}>
         <p>本文</p>
@@ -17,7 +17,7 @@ describe("StepShell", () => {
     expect(screen.getByText("次へ")).toBeTruthy();
   });
 
-  it("onBack 無しなら 前へ が disabled", () => {
+  it("disables the back button without onBack", () => {
     render(
       <StepShell title="X" onNext={() => {}}>
         <p>c</p>
@@ -27,7 +27,7 @@ describe("StepShell", () => {
     expect(back.disabled).toBe(true);
   });
 
-  it("onNext 無しなら 次へ が disabled", () => {
+  it("disables the next button without onNext", () => {
     render(
       <StepShell title="X" onBack={() => {}}>
         <p>c</p>
@@ -37,7 +37,7 @@ describe("StepShell", () => {
     expect(next.disabled).toBe(true);
   });
 
-  it("hideNext で 次へボタン非表示", () => {
+  it("hides the next button with hideNext", () => {
     render(
       <StepShell title="X" hideNext onBack={() => {}}>
         <p>c</p>
@@ -46,7 +46,7 @@ describe("StepShell", () => {
     expect(screen.queryByText("次へ")).toBeNull();
   });
 
-  it("nextLabel をカスタマイズ", () => {
+  it("uses a custom nextLabel", () => {
     render(
       <StepShell title="X" nextLabel="計算する" onNext={() => {}}>
         <p>c</p>
@@ -55,7 +55,7 @@ describe("StepShell", () => {
     expect(screen.getByText("計算する")).toBeTruthy();
   });
 
-  it("description なしでも描画", () => {
+  it("renders without a description", () => {
     render(
       <StepShell title="X" onNext={() => {}}>
         <p>c</p>
@@ -64,7 +64,7 @@ describe("StepShell", () => {
     expect(screen.getByText("X")).toBeTruthy();
   });
 
-  it("ボタンクリックで onBack / onNext", () => {
+  it("calls onBack / onNext on button clicks", () => {
     const onBack = vi.fn();
     const onNext = vi.fn();
     render(
@@ -91,7 +91,7 @@ describe("Field", () => {
     expect(screen.getByText("ヒント")).toBeTruthy();
   });
 
-  it("unit / hint なし", () => {
+  it("renders without unit and hint", () => {
     render(
       <Field id="x" label="X">
         <input id="x" />
@@ -100,7 +100,7 @@ describe("Field", () => {
     expect(screen.getByText("X")).toBeTruthy();
   });
 
-  it("htmlFor が id に紐づく", () => {
+  it("links htmlFor to the input id", () => {
     render(
       <Field id="email" label="メール">
         <input id="email" />

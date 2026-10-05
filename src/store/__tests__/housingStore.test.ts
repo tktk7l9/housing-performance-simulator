@@ -26,28 +26,28 @@ beforeEach(() => {
 });
 
 describe("housingStore", () => {
-  describe("定数 / ヘルパー", () => {
-    it("STEP_IDS は STEP_IDS_NEW_BUILD と一致 (後方互換)", () => {
+  describe("constants and helpers", () => {
+    it("STEP_IDS equals STEP_IDS_NEW_BUILD (backward compatibility)", () => {
       expect(STEP_IDS).toBe(STEP_IDS_NEW_BUILD);
     });
-    it("getStepIds: モード別ステップ", () => {
+    it("getStepIds returns steps per mode", () => {
       expect(getStepIds("new-build")).toEqual(STEP_IDS_NEW_BUILD);
       expect(getStepIds("renovation")).toEqual(STEP_IDS_RENOVATION);
     });
-    it("defaultSelectedScenarios: モード別", () => {
+    it("defaultSelectedScenarios per mode", () => {
       expect(defaultSelectedScenarios("new-build")).toContain("preset-baseline");
       expect(defaultSelectedScenarios("renovation")).toContain("renovation-as-is");
     });
   });
 
   describe("step / visitedSteps", () => {
-    it("setStep: step を更新し visitedSteps に追加", () => {
+    it("setStep updates the step and adds it to visitedSteps", () => {
       useHousingStore.getState().setStep(3);
       const s = useHousingStore.getState();
       expect(s.currentStep).toBe(3);
       expect(s.visitedSteps.has(3)).toBe(true);
     });
-    it("visit: 指定 step を訪問済みにマーク（currentStep は変えない）", () => {
+    it("visit marks a step as visited without changing currentStep", () => {
       useHousingStore.getState().visit(2);
       expect(useHousingStore.getState().visitedSteps.has(2)).toBe(true);
       expect(useHousingStore.getState().currentStep).toBe(0);
@@ -55,14 +55,14 @@ describe("housingStore", () => {
   });
 
   describe("updateInput", () => {
-    it("部分パッチで更新", () => {
+    it("updates with a partial patch", () => {
       useHousingStore.getState().updateInput({ floorArea: 130 });
       expect(useHousingStore.getState().input.floorArea).toBe(130);
     });
   });
 
   describe("setMode", () => {
-    it("renovation に切り替えると visited/step/scenarios もリセット", () => {
+    it("switching to renovation resets visited steps, step and scenarios", () => {
       useHousingStore.getState().setStep(2);
       useHousingStore.getState().setMode("renovation");
       const s = useHousingStore.getState();
@@ -75,7 +75,7 @@ describe("housingStore", () => {
   });
 
   describe("setAddress", () => {
-    it("prefecture と city から region 推定 + 断熱 UA 再セット", () => {
+    it("infers region from prefecture and city and resets the insulation UA", () => {
       useHousingStore.getState().setAddress("北海道", "旭川市");
       const s = useHousingStore.getState();
       expect(s.input.addressPrefecture).toBe("北海道");
@@ -85,13 +85,13 @@ describe("housingStore", () => {
       expect(s.input.uaValue).toBe(0.46);
     });
 
-    it("city なしは都道府県デフォルト", () => {
+    it("uses the prefecture default without a city", () => {
       useHousingStore.getState().setAddress("東京都");
       const s = useHousingStore.getState();
       expect(s.input.region).toBe(6);
     });
 
-    it("prefecture undefined はアドレスをクリア", () => {
+    it("clears the address when prefecture is undefined", () => {
       useHousingStore.getState().setAddress("東京都");
       useHousingStore.getState().setAddress(undefined);
       const s = useHousingStore.getState();
@@ -99,7 +99,7 @@ describe("housingStore", () => {
       expect(s.input.addressCity).toBeUndefined();
     });
 
-    it("custom preset の場合は地域変更でも UA を上書きしない", () => {
+    it("keeps UA on region change with the custom preset", () => {
       useHousingStore.getState().updateInput({ insulationPreset: "custom", uaValue: 0.33 });
       useHousingStore.getState().setAddress("北海道", "旭川市");
       expect(useHousingStore.getState().input.uaValue).toBe(0.33);
@@ -107,11 +107,11 @@ describe("housingStore", () => {
   });
 
   describe("selectedScenarioIds", () => {
-    it("setSelectedScenarioIds: 配列で置換", () => {
+    it("setSelectedScenarioIds replaces the array", () => {
       useHousingStore.getState().setSelectedScenarioIds(["a", "b"]);
       expect(useHousingStore.getState().selectedScenarioIds).toEqual(["a", "b"]);
     });
-    it("toggleScenario: 含まれていなければ追加、含まれていれば除外", () => {
+    it("toggleScenario adds a missing id and removes a present one", () => {
       useHousingStore.getState().setSelectedScenarioIds([]);
       useHousingStore.getState().toggleScenario("x");
       expect(useHousingStore.getState().selectedScenarioIds).toEqual(["x"]);
@@ -121,21 +121,21 @@ describe("housingStore", () => {
   });
 
   describe("calculate", () => {
-    it("選択シナリオで実行 → result セット", () => {
+    it("runs the selected scenarios and sets result", () => {
       useHousingStore.getState().calculate();
       const s = useHousingStore.getState();
       expect(s.result).not.toBeNull();
       expect(s.isCalculating).toBe(false);
     });
 
-    it("選択ゼロなら全シナリオ", () => {
+    it("runs all scenarios when none are selected", () => {
       useHousingStore.getState().setSelectedScenarioIds([]);
       useHousingStore.getState().calculate();
       const result = useHousingStore.getState().result!;
       expect(result.scenarios.length).toBeGreaterThan(0);
     });
 
-    it("内部 throw 時は isCalculating だけ false に (renovation mode + renovation 未設定で crash)", () => {
+    it("resets isCalculating when the run throws (renovation mode without renovation)", () => {
       useHousingStore.getState().setMode("renovation");
       // Calculate with renovation unset -> no baseline internally -> throw
       useHousingStore.getState().calculate();
@@ -144,7 +144,7 @@ describe("housingStore", () => {
   });
 
   describe("reset", () => {
-    it("全状態を初期化", () => {
+    it("resets all state", () => {
       useHousingStore.getState().updateInput({ floorArea: 200 });
       useHousingStore.getState().setStep(3);
       useHousingStore.getState().calculate();
@@ -158,47 +158,47 @@ describe("housingStore", () => {
   });
 
   describe("hydrateFromInput", () => {
-    it("外部入力から状態を復元", () => {
+    it("restores state from external input", () => {
       useHousingStore.getState().hydrateFromInput({ ...DEFAULT_INPUT, floorArea: 150 });
       const s = useHousingStore.getState();
       expect(s.input.floorArea).toBe(150);
       // currentStep becomes the last step
       expect(s.currentStep).toBe(STEP_IDS_NEW_BUILD.length - 1);
     });
-    it("renovation モードの入力でも適切に展開", () => {
+    it("expands renovation-mode input correctly", () => {
       useHousingStore.getState().hydrateFromInput({ ...DEFAULT_INPUT, mode: "renovation" });
       expect(useHousingStore.getState().currentStep).toBe(STEP_IDS_RENOVATION.length - 1);
     });
   });
 
   describe("saveCurrent / loadSaved / deleteSaved", () => {
-    it("saveCurrent: 計算なしでも保存 (summary undefined)", () => {
+    it("saveCurrent saves without a result (summary undefined)", () => {
       const entry = useHousingStore.getState().saveCurrent("first");
       expect(entry.name).toBe("first");
       expect(entry.summary).toBeUndefined();
       expect(useHousingStore.getState().savedSimulations).toHaveLength(1);
     });
 
-    it("saveCurrent: 計算ありで summary 同梱", () => {
+    it("saveCurrent includes the summary with a result", () => {
       useHousingStore.getState().calculate();
       const entry = useHousingStore.getState().saveCurrent("with-result");
       expect(entry.summary).toBeDefined();
       expect(entry.summary?.livingYears).toBe(30);
     });
 
-    it("saveCurrent: 空名は自動命名", () => {
+    it("saveCurrent auto-names an empty name", () => {
       const entry = useHousingStore.getState().saveCurrent("   ");
       expect(entry.name).toContain("名称未設定");
     });
 
-    it("saveCurrent: 上限20件で古いものは切り捨て", () => {
+    it("saveCurrent keeps at most 20 and drops the oldest", () => {
       for (let i = 0; i < 25; i++) useHousingStore.getState().saveCurrent(`s${i}`);
       expect(useHousingStore.getState().savedSimulations).toHaveLength(20);
       // Newest first
       expect(useHousingStore.getState().savedSimulations[0].name).toBe("s24");
     });
 
-    it("loadSaved: 保存済みから入力を復元", () => {
+    it("loadSaved restores the input from a save", () => {
       useHousingStore.getState().updateInput({ floorArea: 145 });
       useHousingStore.getState().saveCurrent("v1");
       const id = useHousingStore.getState().savedSimulations[0].id;
@@ -207,12 +207,12 @@ describe("housingStore", () => {
       expect(useHousingStore.getState().input.floorArea).toBe(145);
     });
 
-    it("loadSaved: 存在しないIDは何もしない", () => {
+    it("loadSaved ignores an unknown ID", () => {
       useHousingStore.getState().loadSaved("nope");
       expect(useHousingStore.getState().input.floorArea).toBe(120);
     });
 
-    it("deleteSaved: 指定IDを削除", () => {
+    it("deleteSaved removes the given ID", () => {
       useHousingStore.getState().saveCurrent("A");
       useHousingStore.getState().saveCurrent("B");
       const id = useHousingStore.getState().savedSimulations[1].id;
@@ -224,7 +224,7 @@ describe("housingStore", () => {
   });
 
   describe("persist", () => {
-    it("入力が localStorage に保存される", () => {
+    it("persists the input to localStorage", () => {
       useHousingStore.getState().updateInput({ floorArea: 175 });
       const raw = localStorage.getItem("housing-performance-simulator");
       expect(raw).toBeTruthy();

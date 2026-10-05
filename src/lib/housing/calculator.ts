@@ -94,7 +94,7 @@ function calcOneScenario(input: HousingInput, scenarioId: string, scenarioName: 
     initialCostGross: initial.total,
     subsidyTotal,
     initialCostNet,
-    initialCostDelta: 0, // 後で baseline と比較して埋める
+    initialCostDelta: 0, // filled in later by comparing with the baseline
     annualHeatingKwh: heat.totalEnergyKwh,
     annualHotWaterKwh: Math.max(0, hw.electricityKwh),
     annualHotWaterGas: hw.gasM3,

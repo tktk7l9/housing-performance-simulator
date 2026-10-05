@@ -57,26 +57,26 @@ function setMode(mode: "new-build" | "renovation") {
 }
 
 describe("BuildingStep", () => {
-  it("title が描画される", () => {
+  it("renders the title", () => {
     render(<BuildingStep onNext={() => {}} />);
     expect(screen.getByText("建物条件")).toBeTruthy();
   });
 
-  it("床面積 input を変更", () => {
+  it("changes the floor area input", () => {
     render(<BuildingStep onNext={() => {}} />);
     const floorArea = screen.getByDisplayValue("120") as HTMLInputElement;
     fireEvent.change(floorArea, { target: { value: "150" } });
     expect(useHousingStore.getState().input.floorArea).toBe(150);
   });
 
-  it("世帯人数 input を変更", () => {
+  it("changes the household input", () => {
     render(<BuildingStep onNext={() => {}} />);
     const household = screen.getByDisplayValue("4") as HTMLInputElement;
     fireEvent.change(household, { target: { value: "5" } });
     expect(useHousingStore.getState().input.household).toBe(5);
   });
 
-  it("次へボタンで onNext", () => {
+  it("the next button calls onNext", () => {
     const onNext = vi.fn();
     render(<BuildingStep onNext={onNext} onBack={() => {}} />);
     fireEvent.click(screen.getByText("次へ"));
@@ -85,12 +85,12 @@ describe("BuildingStep", () => {
 });
 
 describe("PerformanceStep", () => {
-  it("断熱性能タイトル", () => {
+  it("renders the insulation title", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     expect(screen.getAllByText(/断熱性能|断熱仕様|断熱/).length).toBeGreaterThan(0);
   });
 
-  it("UA値 input を変更", () => {
+  it("changes the UA value input", () => {
     render(<PerformanceStep onNext={() => {}} onBack={() => {}} />);
     // 0.87 is the default UA value
     const uaInput = screen.getByDisplayValue("0.87") as HTMLInputElement;
@@ -100,12 +100,12 @@ describe("PerformanceStep", () => {
 });
 
 describe("EquipmentStep", () => {
-  it("設備タイトル", () => {
+  it("renders the equipment title", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     expect(screen.getAllByText(/設備|機器/).length).toBeGreaterThan(0);
   });
 
-  it("太陽光容量 input を変更", () => {
+  it("changes the solar capacity input", () => {
     render(<EquipmentStep onNext={() => {}} onBack={() => {}} />);
     const solar = screen.getByDisplayValue("5") as HTMLInputElement;
     fireEvent.change(solar, { target: { value: "8" } });
@@ -114,12 +114,12 @@ describe("EquipmentStep", () => {
 });
 
 describe("EconomyStep", () => {
-  it("経済条件タイトル", () => {
+  it("renders the economy title", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     expect(screen.getAllByText(/経済|料金/).length).toBeGreaterThan(0);
   });
 
-  it("電気料金 input を変更", () => {
+  it("changes the electricity price input", () => {
     render(<EconomyStep onNext={() => {}} onBack={() => {}} />);
     const ePrice = screen.getByDisplayValue("32") as HTMLInputElement;
     fireEvent.change(ePrice, { target: { value: "40" } });
@@ -128,26 +128,26 @@ describe("EconomyStep", () => {
 });
 
 describe("ScenarioStep", () => {
-  it("シナリオタイトル", () => {
+  it("renders the scenario title", () => {
     render(<ScenarioStep onNext={() => {}} onBack={() => {}} />);
     expect(screen.getAllByText(/シナリオ|比較/).length).toBeGreaterThan(0);
   });
 });
 
 describe("ResultsStep", () => {
-  it("計算実行後に結果が表示される", () => {
+  it("shows results after calculation", () => {
     useHousingStore.getState().calculate();
     render(<ResultsStep onBack={() => {}} />);
     expect(screen.getByText(/結果|総合評価|結論/)).toBeTruthy();
   });
 
-  it("未計算でも crash しない (autorun する場合あり)", () => {
+  it("does not crash before calculation (it may autorun)", () => {
     expect(() => render(<ResultsStep onBack={() => {}} />)).not.toThrow();
   });
 });
 
 describe("RenovationStep", () => {
-  it("renovation モードでタイトル表示", () => {
+  it("shows the title in renovation mode", () => {
     setMode("renovation");
     render(<RenovationStep onNext={() => {}} onBack={() => {}} />);
     expect(screen.getAllByText(/リフォーム|改修/).length).toBeGreaterThan(0);
