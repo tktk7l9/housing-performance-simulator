@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { cn, formatYen, formatManYen, formatKwh, formatKg, formatYears } from "../utils";
-import { encodeInput, decodeInput } from "../share/encoder";
+import LZString from "lz-string";
+import { encodeInput, decodeInput, MAX_TOKEN_LENGTH, MAX_DECODED_JSON_LENGTH } from "../share/encoder";
 import type { HousingInput } from "../housing/types";
 
 describe("utils", () => {
@@ -99,5 +100,28 @@ describe("share/encoder", () => {
   it("decodeInput: unparsable JSON returns null", () => {
     // LZString fails to decompress -> null -> early return null
     expect(decodeInput("ZZZ")).toBeNull();
+  });
+
+  it("decodeInput: a token longer than the app can ever produce is rejected before decompressing", () => {
+    const spy = vi.spyOn(LZString, "decompressFromEncodedURIComponent");
+    expect(decodeInput("A".repeat(MAX_TOKEN_LENGTH + 1))).toBeNull();
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it("decodeInput: a small token that expands past the JSON limit is dropped without parsing", () => {
+    // 2 MB of repetitive JSON compresses to a few KB; this must not reach JSON.parse.
+    const bomb = LZString.compressToEncodedURIComponent("[" + "0,".repeat(1_000_000) + "0]");
+    expect(bomb.length).toBeLessThanOrEqual(MAX_TOKEN_LENGTH);
+    const spy = vi.spyOn(JSON, "parse");
+    expect(decodeInput(bomb)).toBeNull();
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it("decodeInput: the limits leave room for the largest legitimate envelope", () => {
+    const json = JSON.stringify({ schemaVersion: 2, input: { ...input, addressCity: "あ".repeat(64), appliedSubsidyIds: Array.from({ length: 32 }, (_, i) => `subsidy-${i}`.padEnd(64, "x")) } });
+    expect(json.length).toBeLessThan(MAX_DECODED_JSON_LENGTH / 4);
+    expect(LZString.compressToEncodedURIComponent(json).length).toBeLessThan(MAX_TOKEN_LENGTH / 4);
   });
 });
