@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SimulationOutput } from "@/lib/housing/types";
+import { withoutDataUrlFetch } from "@/lib/without-data-url-fetch";
 
 export function PdfExportButton({ output, className }: { output: SimulationOutput; className?: string }) {
   const [busy, setBusy] = useState(false);
@@ -17,7 +18,8 @@ export function PdfExportButton({ output, className }: { output: SimulationOutpu
         import("@react-pdf/renderer"),
         import("./ResultPdfDocument"),
       ]);
-      const blob = await pdf(<ResultPdfDocument output={output} />).toBlob();
+      // The PDF layout engine loads its wasm from a data: URL; see withoutDataUrlFetch.
+      const blob = await withoutDataUrlFetch(() => pdf(<ResultPdfDocument output={output} />).toBlob());
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
