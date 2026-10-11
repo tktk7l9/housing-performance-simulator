@@ -10,6 +10,10 @@ import { DEFAULT_INPUT } from "@/store/housingStore";
 import { runSimulation } from "@/lib/housing/calculator";
 import { buildAllScenarios } from "@/lib/housing/presets";
 
+const { toBlob } = vi.hoisted(() => ({
+  toBlob: vi.fn(() => Promise.resolve(new Blob(["pdf"], { type: "application/pdf" }))),
+}));
+
 vi.mock("@react-pdf/renderer", () => {
   const factory = (tag: string) => {
     const MockTag = ({ children }: { children?: React.ReactNode }) => (
@@ -23,7 +27,7 @@ vi.mock("@react-pdf/renderer", () => {
     Text: ({ children }: { children?: React.ReactNode }) => <span>{children}</span>,
     View: factory("view"),
     StyleSheet: { create: (s: object) => s },
-    pdf: () => ({ toBlob: () => Promise.resolve(new Blob(["pdf"], { type: "application/pdf" })) }),
+    pdf: () => ({ toBlob }),
     Font: { register: () => {} },
   };
 });
@@ -53,6 +57,29 @@ describe("PdfExportButton", () => {
     fireEvent.click(btn);
     await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled();
+  });
+
+  it("renders with data: fetches refused locally (the Yoga wasm loader tries one; CSP would report it)", async () => {
+    URL.createObjectURL = vi.fn().mockReturnValue("blob:mock");
+    URL.revokeObjectURL = vi.fn();
+    HTMLAnchorElement.prototype.click = vi.fn();
+    const realFetch = vi.fn<typeof fetch>();
+    vi.stubGlobal("fetch", realFetch);
+    let wasmFetch: unknown;
+    toBlob.mockImplementationOnce(async () => {
+      wasmFetch = await fetch("data:application/octet-stream;base64,AGFzbQ==").catch((e: unknown) => e);
+      return new Blob(["pdf"], { type: "application/pdf" });
+    });
+    try {
+      render(<PdfExportButton output={result} />);
+      fireEvent.click(screen.getByText(/PDF を保存/).closest("button")!);
+      await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
+      expect(wasmFetch).toBeInstanceOf(TypeError);
+      expect(realFetch).not.toHaveBeenCalled();
+      expect(globalThis.fetch).toBe(realFetch);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
