@@ -118,12 +118,13 @@ describe("RootLayout", () => {
     expect(doc.querySelector('link[rel="preload"][href="/hero-house.svg"]')).toBeTruthy();
   });
 
-  it("metadata: title template, canonical, indexable, no telephone auto-linking", () => {
+  it("metadata: title template, no inherited canonical, indexable, no telephone auto-linking", () => {
     expect(metadata.title).toEqual({
       default: "住宅性能シミュレーター — 30年でどちらが得か、数字で確かめる。",
       template: "%s | 住宅性能シミュレーター",
     });
-    expect(metadata.alternates?.canonical).toBe("/");
+    // Canonicals are per page (canonical.test.ts); one here would leak into every route.
+    expect(metadata.alternates).toBeUndefined();
     expect(metadata.robots).toMatchObject({ index: true, follow: true });
     expect(metadata.formatDetection).toEqual({ telephone: false, address: false, email: false });
     expect(String(metadata.metadataBase)).toMatch(/^https:\/\//);
