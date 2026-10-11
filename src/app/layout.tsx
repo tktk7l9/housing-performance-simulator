@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Analytics } from "@/components/Analytics";
 
 // Migrated from Vercel to Cloudflare Workers on 2026-08-16. The whole Vercel account
 // returns 402 after exceeding Fair Use, so keeping the old URL as canonical would make
@@ -115,14 +116,8 @@ export default function RootLayout({
           本文へ移動
         </a>
         {children}
-        {/* Cloudflare Web Analytics (the token is an identifier meant to be public, not a secret) */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts --
-            type="module" scripts are deferred by spec, so this does not block the parser */}
-        <script
-          type="module"
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon={'{"token": "cd156fbf0fd24da0a12e58fdb4e63828"}'}
-        />
+        {/* Cloudflare Web Analytics, appended after hydration (see the component) */}
+        <Analytics />
       </body>
     </html>
   );

@@ -103,7 +103,7 @@ describe("NotFound", () => {
 });
 
 describe("RootLayout", () => {
-  it("renders a Japanese document with the children in the body and the analytics beacon", () => {
+  it("renders a Japanese document with the children in the body and no external script in the markup", () => {
     const html = renderToStaticMarkup(
       <RootLayout>
         <p>child content</p>
@@ -112,8 +112,9 @@ describe("RootLayout", () => {
     const doc = new DOMParser().parseFromString(html, "text/html");
     expect(doc.documentElement.getAttribute("lang")).toBe("ja");
     expect(doc.body.textContent).toContain("child content");
-    const beacon = doc.querySelector('script[src*="cloudflareinsights"]');
-    expect(beacon?.getAttribute("type")).toBe("module");
+    // The analytics beacon is appended after hydration (components/Analytics.tsx): an external
+    // script in the HTML without integrity costs the Observatory subresource-integrity test.
+    expect(doc.querySelector("script[src]")).toBeNull();
     expect(doc.querySelector('link[rel="preload"][href="/hero-house.svg"]')).toBeTruthy();
   });
 
