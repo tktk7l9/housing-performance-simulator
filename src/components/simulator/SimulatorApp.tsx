@@ -3,20 +3,55 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useHousingStore, getStepIds, type StepId } from "@/store/housingStore";
+import { whenIdle } from "@/lib/when-idle";
 import { TrailSidebar } from "./TrailSidebar";
 import { ToastHost } from "./ToastHost";
 import { BuildingStep } from "./steps/BuildingStep";
-import { PerformanceStep } from "./steps/PerformanceStep";
-import { EquipmentStep } from "./steps/EquipmentStep";
-import { EconomyStep } from "./steps/EconomyStep";
-import { ScenarioStep } from "./steps/ScenarioStep";
-import { ResultsStep } from "./steps/ResultsStep";
-import { RenovationStep } from "./steps/RenovationStep";
+import { lazyStep } from "./lazy-step";
+
+type NavProps = { onNext: () => void; onBack: () => void };
+
+// Only the first step (where every visit starts) ships with the page. The others — the results
+// step brings the chart library — load once the page is idle (see the effect below), or right
+// away when a reload or a shared link opens on them.
+const PerformanceStep = lazyStep<NavProps>(() => import("./steps/PerformanceStep").then((m) => m.PerformanceStep));
+const EquipmentStep = lazyStep<NavProps>(() => import("./steps/EquipmentStep").then((m) => m.EquipmentStep));
+const RenovationStep = lazyStep<NavProps>(() => import("./steps/RenovationStep").then((m) => m.RenovationStep));
+const EconomyStep = lazyStep<NavProps>(() => import("./steps/EconomyStep").then((m) => m.EconomyStep));
+const ScenarioStep = lazyStep<NavProps>(() => import("./steps/ScenarioStep").then((m) => m.ScenarioStep));
+const ResultsStep = lazyStep<{ onBack: () => void }>(() => import("./steps/ResultsStep").then((m) => m.ResultsStep));
+
+const LAZY_STEPS: Partial<Record<StepId, { preload: () => Promise<void> }>> = {
+  performance: PerformanceStep,
+  equipment: EquipmentStep,
+  renovation: RenovationStep,
+  economy: EconomyStep,
+  scenario: ScenarioStep,
+  results: ResultsStep,
+};
+
+// The persisted step is already rehydrated from localStorage when this module runs; start
+// fetching its code now rather than at idle time.
+if (typeof window !== "undefined") {
+  const { currentStep, input } = useHousingStore.getState();
+  const ids = getStepIds(input.mode);
+  void LAZY_STEPS[ids[Math.min(currentStep, ids.length - 1)]]?.preload().catch(() => {});
+}
 
 export function SimulatorApp() {
   const currentStep = useHousingStore((s) => s.currentStep);
   const setStep = useHousingStore((s) => s.setStep);
   const mode = useHousingStore((s) => s.input.mode);
+
+  // Fetch the remaining steps while the page is idle after the first paint, so moving on never
+  // waits for them.
+  useEffect(
+    () =>
+      whenIdle(() => {
+        for (const step of Object.values(LAZY_STEPS)) void step?.preload().catch(() => {});
+      }),
+    [],
+  );
 
   const stepIds = getStepIds(mode);
   const goNext = () => setStep(Math.min(currentStep + 1, stepIds.length - 1));

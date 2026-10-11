@@ -202,12 +202,14 @@ describe("ToastHost timer", () => {
 });
 
 describe("SimulatorApp next / back", () => {
-  it("次へ and 前へ move between steps and mark them visited", () => {
+  it("次へ and 前へ move between steps and mark them visited", async () => {
     render(<SimulatorApp />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("建物条件");
     fireEvent.click(screen.getByRole("button", { name: "次へ" }));
     expect(useHousingStore.getState().currentStep).toBe(1);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("住宅性能");
+    // Steps after the first load on demand (lazy-step.tsx); CI may take a while to transform them.
+    const heading = await screen.findByRole("heading", { level: 1, name: /住宅性能/ }, { timeout: 5000 });
+    expect(heading.textContent).toContain("住宅性能");
     fireEvent.click(screen.getByRole("button", { name: "前へ" }));
     expect(useHousingStore.getState().currentStep).toBe(0);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("建物条件");
