@@ -1,33 +1,13 @@
 import type { NextConfig } from "next";
+import { contentSecurityPolicy } from "./src/lib/csp";
 
-// Content-Security-Policy:
-//   - default-src 'self' restricts all resources to the same origin
-//   - script-src needs 'unsafe-inline' for Next.js inline bootstrap scripts.
-//     'unsafe-eval' is only needed by the dev server (HMR / React Refresh), so
-//     production allows just 'wasm-unsafe-eval' for the Yoga WebAssembly
-//     module that @react-pdf/renderer uses for PDF export
-//   - style-src 'unsafe-inline' is required by Tailwind v4 / Radix Portal
-//   - img-src allows data: and blob: (for PDF thumbnails and OG previews)
-//   - frame-ancestors 'none' prevents clickjacking (stricter than X-Frame-Options)
+// Static CSP baseline (src/lib/csp.ts, which explains every directive). In production
+// worker.ts replaces script-src 'unsafe-inline' with a per-request nonce on every HTML
+// response (src/lib/csp-nonce.ts).
 const isDev = process.env.NODE_ENV === "development";
-const scriptEval = isDev ? "'unsafe-eval'" : "'wasm-unsafe-eval'";
-
-const csp = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' ${scriptEval} https://static.cloudflareinsights.com`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self' data:",
-  "connect-src 'self' https://cloudflareinsights.com",
-  "worker-src 'self' blob:",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join("; ");
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy({ dev: isDev }) },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
   // No window.open / cross-origin popups are used, so isolating the browsing context costs nothing.
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
