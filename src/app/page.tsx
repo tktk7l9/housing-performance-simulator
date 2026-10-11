@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Calculator, FileBarChart2, Scale, Sun } from "lucide-react";
+
+// Resolved against metadataBase in the root layout.
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+    languages: { ja: "/" },
+  },
+};
 
 export default function Home() {
   return (

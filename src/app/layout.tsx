@@ -56,12 +56,8 @@ export const metadata: Metadata = {
     "リフォーム",
     "投資回収",
   ],
-  alternates: {
-    canonical: "/",
-    languages: {
-      ja: "/",
-    },
-  },
+  // No `alternates` here: a canonical in the root layout is inherited by every page, which told
+  // search engines that /simulator duplicates the home page. Each page sets its own instead.
   formatDetection: {
     telephone: false,
     address: false,
