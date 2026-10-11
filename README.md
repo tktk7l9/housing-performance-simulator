@@ -1,6 +1,6 @@
 # 住宅性能シミュレーター
 
-**[▶ 公開サイト](https://housing-performance-simulator.vercel.app)**
+**[▶ 公開サイト](https://housing-performance-simulator.saitotakuya0719.workers.dev)**
 
 施主が住宅の性能仕様（断熱・気密）と設備（太陽光・蓄電池）の選択を、**初期費用と30年ランニングコストの両面**から中立的に意思決定できるツール。
 
@@ -10,6 +10,7 @@
 - **中立性**: メーカー名・商品名は出さず、機器カテゴリと効率値のみで扱う
 - **透明性**: 計算で使用している全ての係数・前提値を結果画面の「計算根拠」から確認可能
 - **共有可能**: 結果ページの URL 共有 / PDF 出力に対応
+- **セキュリティ**: Cloudflare Workers（OpenNext）で配信。CSP はリクエストごとの nonce を Worker が付与（`script-src` に `'unsafe-inline'` なし）
 
 ## 開発
 
