@@ -56,6 +56,9 @@
     "miniflare": {
       "undici": "7.30.0",
       "sharp": "0.35.5"
+    },
+    "@node-minify/core": {
+      "glob": "^10.5.0"
     }
   }
 }
