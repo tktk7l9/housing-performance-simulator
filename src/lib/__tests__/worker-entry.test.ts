@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { contentSecurityPolicy } from "../csp";
-import { CSP_HEADER, type Rewriter, type ScriptElement } from "../csp-nonce";
+import { BROWSER_CACHE_CONTROL, CACHE_CONTROL_HEADER, CSP_HEADER, type Rewriter, type ScriptElement } from "../csp-nonce";
 import { type FetchHandler, withScriptNonceCsp } from "../worker-entry";
 
 const root = path.resolve(__dirname, "../../..");
@@ -83,7 +83,12 @@ describe("withScriptNonceCsp", () => {
 
   const page = () =>
     new Response("<script>self.__next_f.push([])</script>", {
-      headers: { "content-type": "text/html; charset=utf-8", [CSP_HEADER]: contentSecurityPolicy() },
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        [CSP_HEADER]: contentSecurityPolicy(),
+        // What Next sends on a prerendered page: meant for a CDN, not for the browser.
+        [CACHE_CONTROL_HEADER]: "s-maxage=31536000",
+      },
     });
 
   it("delegates to the OpenNext worker and gives HTML a per-request nonce", async () => {
@@ -104,6 +109,39 @@ describe("withScriptNonceCsp", () => {
     const [inline, external] = stamped;
     expect(inline.nonce).toBe(nonce);
     expect(external.nonce).toBeUndefined();
+    // Both rewrites apply to the same response: the CDN header never reaches the browser,
+    // so no cache can hold the page (and its nonce) for a year.
+    expect(response.headers.get(CACHE_CONTROL_HEADER)).toBe(BROWSER_CACHE_CONTROL);
+  });
+
+  it("gives an RSC payload the browser Cache-Control and leaves its CSP static", async () => {
+    const rsc = new Response("0:[]", {
+      headers: {
+        "content-type": "text/x-component",
+        [CSP_HEADER]: contentSecurityPolicy(),
+        [CACHE_CONTROL_HEADER]: "s-maxage=31536000",
+      },
+    });
+    openNextFetch.mockResolvedValue(rsc);
+    const out = await worker.fetch(new Request("https://example.test/simulator?_rsc=abc"), {}, {});
+    expect(out.headers.get(CACHE_CONTROL_HEADER)).toBe(BROWSER_CACHE_CONTROL);
+    expect(out.headers.get(CSP_HEADER)).toBe(contentSecurityPolicy());
+    expect(stamped).toHaveLength(0);
+    expect(await out.text()).toBe("0:[]");
+  });
+
+  it("keeps Next's no-store header on a dynamic page", async () => {
+    const dynamic = new Response("<p>", {
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        [CSP_HEADER]: contentSecurityPolicy(),
+        [CACHE_CONTROL_HEADER]: "private, no-cache, no-store, max-age=0, must-revalidate",
+      },
+    });
+    openNextFetch.mockResolvedValue(dynamic);
+    const out = await worker.fetch(new Request("https://example.test/share/abc"), {}, {});
+    expect(out.headers.get(CACHE_CONTROL_HEADER)).toBe("private, no-cache, no-store, max-age=0, must-revalidate");
+    expect(out.headers.get(CSP_HEADER)).toMatch(/'nonce-/);
   });
 
   it("issues a different nonce on every request", async () => {

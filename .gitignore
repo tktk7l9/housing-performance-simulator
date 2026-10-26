@@ -2,7 +2,8 @@ node_modules
 .next
 out
 build
-.env*.local
+.env*
+!.env.example
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
@@ -12,3 +13,5 @@ coverage
 # Cloudflare Workers build output and local state
 .open-next
 .wrangler
+.dev.vars*
+dist/server/.dev.vars
