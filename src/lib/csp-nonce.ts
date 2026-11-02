@@ -162,3 +162,48 @@ export function applyScriptNonce(
     })
     .transform(rewritten);
 }
+
+export const CACHE_CONTROL_HEADER = "Cache-Control";
+
+/** What Vercel sends browsers in place of Next's CDN-only header. */
+export const BROWSER_CACHE_CONTROL = "public, max-age=0, must-revalidate";
+
+// Next sends `s-maxage=31536000` (older versions add `stale-while-revalidate=2592000`) on
+// prerendered pages and their RSC payloads (the ?_rsc= fetches behind prefetch and client
+// navigation). It is meant for a CDN, and Vercel rewrites it to BROWSER_CACHE_CONTROL, but on
+// Workers it reaches the client as is. Two things go wrong with that:
+//   - a shared cache on the way (a proxy, or a cache rule once a custom domain is in front) may
+//     keep the HTML for a year, and with it one fixed script nonce, which defeats the per-request
+//     nonce above;
+//   - with stale-while-revalidate, Chrome serves RSC payloads from its disk cache for up to
+//     30 days, and after a deploy they point at chunks that no longer exist (404, unstyled
+//     pages, broken client navigation). Five sibling apps broke this way on 2026-10-20.
+const S_MAXAGE_DIRECTIVE = /(^|,)\s*s-maxage\s*=/i;
+
+/**
+ * The Cache-Control a browser should get: BROWSER_CACHE_CONTROL when `value` has the s-maxage
+ * directive (case-insensitive, matched as a directive name), otherwise `value` unchanged
+ * (null stays null).
+ */
+export function browserCacheControl(value: string | null): string | null {
+  return value !== null && S_MAXAGE_DIRECTIVE.test(value) ? BROWSER_CACHE_CONTROL : value;
+}
+
+/**
+ * Applies browserCacheControl to a response of any type. Returns the same response when the
+ * header needs no change, so a response without Cache-Control never gains one; otherwise returns
+ * a copy that differs only in that header (the original's headers may be immutable).
+ */
+export function applyBrowserCacheControl(response: Response): Response {
+  const current = response.headers.get(CACHE_CONTROL_HEADER);
+  const normalized = browserCacheControl(current);
+  if (normalized === null || normalized === current) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set(CACHE_CONTROL_HEADER, normalized);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
