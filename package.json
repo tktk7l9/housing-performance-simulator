@@ -23,25 +23,25 @@
     "@react-pdf/renderer": "^4.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.59.0",
+    "lucide-react": "^1.70.0",
     "lz-string": "^1.5.0",
     "next": "^16.4.5",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
-    "zustand": "^5.0.15"
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.12",
+    "@opennextjs/cloudflare": "^1.20.16",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^26",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
-    "@vitest/coverage-v8": "^5.0.5",
+    "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/coverage-v8": "^5.1.0",
     "esbuild": "^0.28.2",
     "eslint": "^10.13.0",
     "eslint-config-next": "^16.4.5",
@@ -50,7 +50,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.2",
     "vitest": "^5.0.0",
-    "wrangler": "^4.151.1"
+    "wrangler": "^4.158.0"
   },
   "overrides": {
     "@node-minify/core": {
